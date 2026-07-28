@@ -1,0 +1,30 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\HasMany;
+
+class Kelas extends Model
+{
+    use HasFactory;
+
+    // Menentukan nama tabel secara eksplisit agar Laravel tidak otomatis mencari 'kelases'
+    protected $table = 'kelas';
+
+    // Kolom yang diizinkan untuk diisi secara massal (mass assignment)
+    protected $fillable = [
+        'nama_kelas',  // Contoh: '7-A', '8-B', '9-C'
+        'tingkat',     // Contoh: '7', '8', '9'
+        'wali_kelas',  // Bisa diisi nama wali kelas atau ID guru
+    ];
+
+    /**
+     * Relasi One-to-Many: Satu kelas memiliki banyak siswa.
+     */
+    public function siswa(): HasMany
+    {
+        return $this->hasMany(Siswa::class, 'kelas_id', 'id');
+    }
+}

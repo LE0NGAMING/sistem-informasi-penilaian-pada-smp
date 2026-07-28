@@ -1,0 +1,11 @@
+/* 
+ * Tailwind CSS is not used in this project (using Bootstrap 5 via CDN instead). 
+ * Tailwind v4 directives have been commented out to prevent IDE linter warnings.
+ */
+@import 'tailwindcss';
+/* @source '../../vendor/laravel/framework/src/Illuminate/Pagination/resources/views/*.blade.php'; */
+/* @source '../../storage/framework/views/*.php'; */
+/* @theme {
+    --font-sans: 'Instrument Sans', ui-sans-serif, system-ui, sans-serif, 'Apple Color Emoji', 'Segoe UI Emoji',
+        'Segoe UI Symbol', 'Noto Color Emoji';
+} */
