@@ -2,6 +2,7 @@
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Auth\LoginController;
+use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use Illuminate\Support\Facades\Route;
@@ -38,7 +39,7 @@ Route::middleware('auth')->group(function () {
 
     // Kepala Sekolah Dashboard
     Route::middleware('role:' . RoleEnum::KEPALA_SEKOLAH->value)->group(function () {
-        Route::get('/kepala-sekolah/dashboard', fn() => view('dashboard.kepsek'))->name('kepsek.dashboard');
+        Route::get('/kepala-sekolah/dashboard', fn() => view('kepalasekolah.dashboard'))->name('kepalasekolah.dashboard');
     });
 
     // Kurikulum Dashboard
@@ -48,7 +49,7 @@ Route::middleware('auth')->group(function () {
 
     // Guru Dashboard
     Route::middleware('role:' . RoleEnum::GURU->value)->group(function () {
-        Route::get('/guru/dashboard', fn() => view('dashboard.guru'))->name('guru.dashboard');
+        Route::get('/guru/dashboard', fn() => view('guru.dashboard'))->name('guru.dashboard');
     });
 
     // Siswa Dashboard
@@ -60,4 +61,12 @@ Route::middleware('auth')->group(function () {
     Route::middleware('role:' . RoleEnum::ORANG_TUA->value)->group(function () {
         Route::get('/orang-tua/dashboard', fn() => view('dashboard.ortu'))->name('ortu.dashboard');
     });
+
+    // Route Pengaturan Profil & Password
+    Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+    Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
+    Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');
+
+    // Route Logout
+    Route::post('/logout', [ProfileController::class, 'logout'])->name('logout');
 });
