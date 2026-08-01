@@ -7,7 +7,7 @@ use Illuminate\Database\Eloquent\Relations\HasOne;
 use Illuminate\Database\Eloquent\SoftDeletes;
 use Illuminate\Foundation\Auth\User as Authenticatable;
 use Illuminate\Notifications\Notifiable;
-use App\Enums\RoleEnum;
+use App\Enums\RoleEnum; // Import Enum
 use Laravel\Sanctum\HasApiTokens;
 
 class User extends Authenticatable
@@ -40,6 +40,9 @@ class User extends Authenticatable
             'is_active' => 'boolean',
             'last_login_at' => 'datetime',
             'two_factor_confirmed_at' => 'datetime',
+
+            // 1. TAMBAHKAN CASTING ROLE KE ENUM DI SINI
+            'role' => RoleEnum::class,
         ];
     }
 
@@ -58,13 +61,15 @@ class User extends Authenticatable
         return $this->hasOne(OrangTua::class, 'user_id');
     }
 
+    // 2. SESUAIKAN METHOD PEMERIKSAAN ROLE AGAR MENGGUNAKAN CASE ENUM
     public function isSuperAdmin(): bool
     {
-        return $this->role === 'super_admin';
+        // Sesuaikan nama Case Enum milikmu (contoh: RoleEnum::SUPER_ADMIN atau RoleEnum::SUPER_ADMIN->value)
+        return $this->role === RoleEnum::SUPER_ADMIN;
     }
 
     public function isGuru(): bool
     {
-        return in_array($this->role, ['guru_mapel', 'wali_kelas']);
+        return $this->role === RoleEnum::GURU; //RoleEnum::WALI_KELAS
     }
 }

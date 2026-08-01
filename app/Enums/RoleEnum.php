@@ -24,4 +24,12 @@ enum RoleEnum: string
             self::ORANG_TUA => 'Orang Tua / Wali',
         };
     }
+
+    public function canAccessNavbar(): bool
+    {
+        return match ($this) {
+            self::SUPER_ADMIN, self::ADMIN_SEKOLAH, self::KEPALA_SEKOLAH, self::KURIKULUM, self::GURU => true,
+            default => false,
+        };
+    }
 }

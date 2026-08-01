@@ -166,10 +166,18 @@
 
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
+                    @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('siswa.*') ? 'active' : '' }}" href="#">
                             <i class="bi bi-people-fill"></i>
                             <span>Data Siswa</span>
+                        </a>
+                    </li>
+                    @endif
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('guru.absensi.*') ? 'active' : '' }}" href="{{ route('guru.absensi.index') }}">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <span>Presensi Siswa</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -220,9 +228,9 @@
                                 <div class="fw-semibold small text-truncate" style="max-width: 150px;">
                                     {{ Auth::user()->name ?? 'Pengguna' }}
                                 </div>
-                                <span class="badge bg-primary-subtle text-primary extra-small" style="font-size: 0.7rem;">
+                                <!-- <span class="badge bg-primary-subtle text-primary extra-small" style="font-size: 0.7rem;">
                                     {{ Auth::user()->role->value ?? 'Role' }}
-                                </span>
+                                </span> -->
                             </div>
                         </a>
 
