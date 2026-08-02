@@ -77,4 +77,10 @@ class Siswa extends Model
     {
         return $this->hasMany(Rapor::class, 'siswa_id');
     }
+
+    // 1. TAMBAHKAN RELASI KE KELAS
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'kelas_id');
+    }
 }

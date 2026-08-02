@@ -19,12 +19,13 @@ class Guru extends Model
         'user_id',
         'nip',
         'nama_lengkap',
-        'gelar_depan',
-        'gelar_belakang',
-        'jk',
+        'gelar',
+        //'gelar_belakang',
+        'jenis_kelamin',
+        'tanggal_lahir',
         'no_hp',
-        'foto_path',
-        'jabatan',
+        'foto_path'
+        //'jabatan',
     ];
 
     public function user(): BelongsTo
@@ -55,4 +56,8 @@ class Guru extends Model
             'jenis_kelamin' => JenisKelaminEnum::class,
         ];
     }
+
+    protected $casts = [
+        'tanggal_lahir' => 'date',
+    ];
 }

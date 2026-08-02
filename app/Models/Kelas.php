@@ -17,7 +17,7 @@ class Kelas extends Model
     protected $fillable = [
         'nama_kelas',  // Contoh: '7-A', '8-B', '9-C'
         'tingkat',     // Contoh: '7', '8', '9'
-        'wali_kelas',  // Bisa diisi nama wali kelas atau ID guru
+        'guru_id',  // Bisa diisi nama wali kelas atau ID guru
     ];
 
     /**
@@ -26,5 +26,10 @@ class Kelas extends Model
     public function siswa(): HasMany
     {
         return $this->hasMany(Siswa::class, 'kelas_id', 'id');
+    }
+
+    public function waliKelas()
+    {
+        return $this->belongsTo(Guru::class, 'guru_id'); // sesuaikan 'guru_id' atau 'wali_kelas_id'
     }
 }

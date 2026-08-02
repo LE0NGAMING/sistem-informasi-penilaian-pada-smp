@@ -17,7 +17,7 @@ class DashboardController extends Controller
     {
         // Mengambil hitungan data dari database
         $totalSiswa = Siswa::count();
-        $totalGuru  = Guru::count();
+        $totalGuru = User::where('role', \App\Enums\RoleEnum::GURU->value)->count();
         $totalKelas = Kelas::count();
         $totalMapel = Mapel::count();
         $totalRombel = Rombel::count();

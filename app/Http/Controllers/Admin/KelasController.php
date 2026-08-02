@@ -4,6 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
 use App\Models\Kelas;
+use App\Models\Guru;
 use Illuminate\Http\Request;
 
 class KelasController extends Controller
@@ -16,7 +17,9 @@ class KelasController extends Controller
 
     public function create()
     {
-        return view('admin.kelas.create');
+        $gurus = Guru::orderBy('nama_lengkap', 'asc')->get();
+
+        return view('admin.kelas.create', compact('gurus'));
     }
 
     public function store(Request $request)

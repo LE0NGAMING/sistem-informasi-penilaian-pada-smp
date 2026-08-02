@@ -13,6 +13,7 @@ use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\RombelController;
+use App\Http\Controllers\Admin\GuruController;
 
 use Illuminate\Support\Facades\Route;
 
@@ -53,6 +54,7 @@ Route::middleware('auth')->group(function () {
             Route::resource('mapel', MapelController::class);
             Route::resource('siswa', SiswaController::class);
             Route::resource('rombel', RombelController::class);
+            Route::resource('guru', GuruController::class);
         });
 
     // Kepala Sekolah Dashboard

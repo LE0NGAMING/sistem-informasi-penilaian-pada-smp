@@ -169,14 +169,17 @@
         <!-- Card Pintasan Akses Cepat -->
         <div class="card border-0 shadow-sm">
             <div class="card-header bg-white py-3 border-bottom-0">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Pintasan Akses Cepat</h6>
+                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Akses Cepat</h6>
             </div>
             <div class="card-body pt-0 d-grid gap-2">
-                <a href="#" class="btn btn-outline-primary btn-sm text-start py-2">
-                    <i class="bi bi-person-plus-fill me-2"></i>Tambah Data Siswa Baru
+                <a href="{{ route('admin.siswa.create') }}" class="btn btn-outline-primary btn-sm text-start py-2">
+                    <i class="bi bi-person-plus-fill me-2"></i>Tambah Data Siswa
                 </a>
-                <a href="#" class="btn btn-outline-success btn-sm text-start py-2">
-                    <i class="bi bi-person-badge-fill me-2"></i>Tambah Data Guru Baru
+                <a href="{{ route('admin.guru.create') }}" class="btn btn-outline-success btn-sm text-start py-2">
+                    <i class="bi bi-person-badge-fill me-2"></i>Tambah Data Guru
+                </a>
+                <a href="{{ route('admin.kelas.create') }}" class="btn btn-outline-secondary btn-sm text-start py-2">
+                    <i class="bi bi-house-add-fill me-2"></i>Tambah Data Kelas
                 </a>
                 <a href="#" class="btn btn-outline-secondary btn-sm text-start py-2">
                     <i class="bi bi-calendar3 me-2"></i>Kelola Tahun Akademik & Semester

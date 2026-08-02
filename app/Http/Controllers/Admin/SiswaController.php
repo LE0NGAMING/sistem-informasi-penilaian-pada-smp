@@ -61,4 +61,43 @@ class SiswaController extends Controller
         $siswa->delete(); // Soft delete
         return back()->with('success', 'Data siswa berhasil dihapus.');
     }
+
+    public function edit(Siswa $siswa)
+    {
+        $kelases = Kelas::all();
+        // Kita load relasi user dan kelas untuk ditampilkan di form
+        $siswa->load('user', 'kelas');
+
+        return view('admin.siswa.edit', compact('siswa', 'kelases'));
+    }
+
+    public function update(Request $request, Siswa $siswa)
+    {
+        $validated = $request->validate([
+            'nisn'          => 'required|unique:siswa,nisn,' . $siswa->id,
+            'nama_lengkap'  => 'required|string|max:255',
+            'jenis_kelamin' => 'required|in:L,P',
+            'kelas_id'      => 'required|exists:kelas,id',
+            'email'         => 'required|email|unique:users,email,' . $siswa->user_id,
+        ]);
+
+        DB::transaction(function () use ($validated, $siswa) {
+            // 1. Update User Akun
+            $siswa->user->update([
+                'name'     => $validated['nama_lengkap'],
+                'email'    => $validated['email'],
+                // 'password' tetap 'siswa123' jika tidak diubah
+            ]);
+
+            // 2. Update Data Siswa
+            $siswa->update([
+                'kelas_id'      => $validated['kelas_id'],
+                'nisn'          => $validated['nisn'],
+                'nama_lengkap'  => $validated['nama_lengkap'],
+                'jenis_kelamin' => $validated['jenis_kelamin'],
+            ]);
+        });
+
+        return redirect()->route('admin.siswa.index')->with('success', 'Data siswa berhasil diupdate.');
+    }
 }

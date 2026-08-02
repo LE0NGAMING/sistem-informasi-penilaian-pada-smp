@@ -141,6 +141,8 @@
     </style>
 
     @stack('styles')
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -157,7 +159,7 @@
                 <div class="sidebar-heading">Menu Utama</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
                             <i class="bi bi-grid-1x2-fill"></i>
                             <span>Dashboard</span>
                         </a>
@@ -168,9 +170,27 @@
                 <ul class="nav flex-column">
                     @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('siswa.*') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
                             <i class="bi bi-people-fill"></i>
                             <span>Data Siswa</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}" href="{{ route('admin.guru.index') }}">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Data Guru</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('mapel.*') ? 'active' : '' }}" href="#">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Data Mata Pelajaran</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
+                            <i class="bi bi-people-fill"></i>
+                            <span>Data Kelas</span>
                         </a>
                     </li>
                     @endif
@@ -308,6 +328,55 @@
     </script>
 
     @stack('scripts')
+
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            // Cari semua elemen alert di halaman
+            const alertElements = document.querySelectorAll('.alert');
+
+            alertElements.forEach(function(alert) {
+                setTimeout(function() {
+                    const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
+                    if (bsAlert) {
+                        bsAlert.close();
+                    }
+                }, 2000);
+            });
+        });
+
+        document.addEventListener('DOMContentLoaded', function() {
+            document.querySelectorAll('.btn-delete').forEach(button => {
+                button.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    const form = this.closest('form');
+                    const nama = this.getAttribute('data-nama') || 'data ini';
+
+                    Swal.fire({
+                        title: 'Apakah Anda yakin?',
+                        html: `Data guru <strong>${nama}</strong> akan dihapus permanen!`,
+                        icon: 'warning',
+                        showCancelButton: true,
+                        confirmButtonColor: '#dc3545', // Warna merah Bootstrap
+                        cancelButtonColor: '#6c757d', // Warna abu-abu Bootstrap
+                        confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Ya, Hapus!',
+                        cancelButtonText: 'Batal',
+                        reverseButtons: true, // Letak tombol batal di kiri, hapus di kanan
+                        customClass: {
+                            popup: 'rounded-4 border-0 shadow-lg',
+                            confirmButton: 'btn btn-danger px-4 py-2 me-2',
+                            cancelButton: 'btn btn-secondary px-4 py-2'
+                        },
+                        buttonsStyling: false
+                    }).then((result) => {
+                        if (result.isConfirmed) {
+                            form.submit();
+                        }
+                    });
+                });
+            });
+        });
+    </script>
+
 </body>
 
 </html>

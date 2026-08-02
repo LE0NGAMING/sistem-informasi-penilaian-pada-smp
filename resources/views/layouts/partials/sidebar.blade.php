@@ -69,7 +69,7 @@
         @endif
 
         <!-- AKADEMIK & NILAI -->
-        @if(in_array(auth()->user()->role, ['super_admin', 'admin_sekolah', 'guru_mapel', 'wali_kelas', 'guru']))
+        @if(in_array(auth()->user()->role, ['guru_mapel', 'wali_kelas', 'guru']))
         <div>
             <p class="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Akademik & Nilai</p>
             <div class="space-y-1">
