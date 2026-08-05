@@ -14,7 +14,10 @@ use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\GuruController;
+use App\Http\Controllers\Admin\PresensiController;
 
+// Import Controller Guru untuk Penilaian dan Presensi
+use App\Http\Controllers\Guru\PenilaianController;
 use Illuminate\Support\Facades\Route;
 
 // Redirect root ke halaman login
@@ -49,12 +52,22 @@ Route::middleware('auth')->group(function () {
             // Arahkan dashboard ke DashboardController
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
+            // --- Presensi Routes ---
+            Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi.index');
+            Route::post('/presensi', [PresensiController::class, 'store'])->name('presensi.store');
+            Route::get('/presensi/rekap', [PresensiController::class, 'rekap'])->name('presensi.rekap');
+
+            // --- Nilai Routes ---
+            Route::get('/nilai', [PenilaianController::class, 'index'])->name('nilai.index');
+            Route::post('/nilai', [PenilaianController::class, 'store'])->name('nilai.store');
+
             // --- Master Data Routes ---
             Route::resource('kelas', KelasController::class);
             Route::resource('mapel', MapelController::class);
             Route::resource('siswa', SiswaController::class);
             Route::resource('rombel', RombelController::class);
             Route::resource('guru', GuruController::class);
+            Route::resource('presensi', PresensiController::class);
         });
 
     // Kepala Sekolah Dashboard
@@ -74,9 +87,13 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', fn() => view('guru.dashboard'))->name('dashboard');
 
-            // Route Absensi Guru
-            Route::get('/absensi', [PresensiGuruController::class, 'index'])->name('absensi.index');
-            Route::post('/absensi', [PresensiGuruController::class, 'store'])->name('absensi.store');
+            // Menu Presensi Siswa
+            Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi.index');
+            Route::post('/presensi', [PresensiController::class, 'store'])->name('presensi.store');
+
+            // Menu Input Nilai
+            Route::get('/nilai', [PenilaianController::class, 'index'])->name('nilai.index');
+            Route::post('/nilai', [PenilaianController::class, 'store'])->name('nilai.store');
         });
 
     // Siswa Dashboard

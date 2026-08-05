@@ -13,13 +13,13 @@
         </a>
     </div>
 
-    <!-- Alert Success -->
-    @if(session('success'))
+    <!-- Alert Success (Opsi jika alert bawaan ingin ditampilkan) -->
+    <!-- @if(session('success'))
     <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
         <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    @endif
+    @endif -->
 
     <!-- Card Data Table -->
     <div class="card border-0 shadow-sm rounded-3">
@@ -40,7 +40,9 @@
                     <tbody>
                         @forelse($siswas as $index => $siswa)
                         <tr>
-                            <td class="ps-4">{{ $siswas->firstItem() + $index }}</td>
+                            <td class="ps-4 fw-semibold text-muted">
+                                {{ method_exists($siswas, 'firstItem') && $siswas->firstItem() ? $siswas->firstItem() + $index : $index + 1 }}
+                            </td>
                             <td><span class="fw-semibold text-secondary">{{ $siswa->nisn }}</span></td>
                             <td class="fw-bold text-dark">{{ $siswa->nama_lengkap }}</td>
                             <td>
@@ -89,11 +91,48 @@
                 </table>
             </div>
         </div>
-        @if($siswas->hasPages())
+        @if(method_exists($siswas, 'hasPages') && $siswas->hasPages())
         <div class="card-footer bg-white border-0 py-3">
             {{ $siswas->links() }}
         </div>
         @endif
     </div>
 </div>
+
+{{-- Skrip Penanganan Hapus Data --}}
+@push('scripts')
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        document.querySelectorAll('.btn-delete').forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.preventDefault();
+                const form = this.closest('form');
+                const nama = this.getAttribute('data-nama') || 'siswa ini';
+
+                Swal.fire({
+                    title: 'Apakah Anda yakin?',
+                    html: `Data siswa <strong>${nama}</strong> beserta akun aksesnya akan dihapus!`,
+                    icon: 'warning',
+                    showCancelButton: true,
+                    confirmButtonColor: '#dc3545',
+                    cancelButtonColor: '#6c757d',
+                    confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Ya, Hapus!',
+                    cancelButtonText: 'Batal',
+                    reverseButtons: true,
+                    customClass: {
+                        popup: 'rounded-4 border-0 shadow-lg',
+                        confirmButton: 'btn btn-danger px-4 py-2 me-2',
+                        cancelButton: 'btn btn-secondary px-4 py-2'
+                    },
+                    buttonsStyling: false
+                }).then((result) => {
+                    if (result.isConfirmed) {
+                        form.submit();
+                    }
+                });
+            });
+        });
+    });
+</script>
+@endpush
 @endsection

@@ -12,14 +12,16 @@ return new class extends Migration
             $table->id();
             $table->foreignId('siswa_id')->constrained('siswa')->onDelete('cascade');
             $table->foreignId('kelas_id')->constrained('kelas')->onDelete('cascade');
-            $table->foreignId('guru_id')->nullable()->constrained('users')->onDelete('set null');
             $table->date('tanggal');
+            $table->time('jam_masuk')->nullable();
+            $table->time('jam_pulang')->nullable();
             $table->enum('status', ['hadir', 'sakit', 'izin', 'alpa'])->default('hadir');
-            $table->string('catatan')->nullable();
+            $table->enum('metode', ['manual', 'mesin_rfid', 'mesin_fingerprint', 'face_recognition'])->default('manual');
+            $table->string('keterangan')->nullable();
             $table->timestamps();
 
-            // Kunci unik agar 1 siswa tidak punya 2 data absensi di tanggal & kelas yang sama
-            $table->unique(['siswa_id', 'kelas_id', 'tanggal']);
+            // Mencegah duplikasi presensi di tanggal yang sama
+            $table->unique(['siswa_id', 'tanggal']);
         });
     }
 

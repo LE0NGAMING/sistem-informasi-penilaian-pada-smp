@@ -44,7 +44,7 @@ class LoginController extends Controller
         $user = Auth::user();
 
         // Redirect sesuai RoleEnum
-        return redirect()->intended($this->getRedirectUrlByRole($user->role));
+        return redirect()->to($this->getRedirectUrlByRole($user->role));
     }
 
     /**

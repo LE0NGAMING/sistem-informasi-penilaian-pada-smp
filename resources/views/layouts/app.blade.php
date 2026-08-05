@@ -73,6 +73,13 @@
             transition: all 0.2s ease;
         }
 
+        #sidebar-wrapper .nav-link i {
+            font-size: 1.15rem;
+            width: 24px;
+            text-align: center;
+            display: inline-block;
+        }
+
         #sidebar-wrapper .nav-link:hover,
         #sidebar-wrapper .nav-link.active {
             color: #ffffff;
@@ -152,15 +159,29 @@
         <aside id="sidebar-wrapper">
             <div class="sidebar-brand">
                 <i class="bi bi-mortarboard-fill text-primary me-2 fs-4"></i>
-                <span>SIP SMP</span>
+                <span>SIP SMPN 110 Jakarta</span>
             </div>
 
             <div class="py-3">
                 <div class="sidebar-heading">Menu Utama</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}" href="{{ route('admin.dashboard') }}">
-                            <i class="bi bi-grid-1x2-fill"></i>
+                        @php
+                        $userRole = Auth::user()->role;
+                        $dashboardRoute = match($userRole) {
+                        \App\Enums\RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
+                        \App\Enums\RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
+                        \App\Enums\RoleEnum::KEPALA_SEKOLAH => route('kepsek.dashboard'),
+                        \App\Enums\RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
+                        \App\Enums\RoleEnum::GURU => route('guru.dashboard'),
+                        \App\Enums\RoleEnum::SISWA => route('siswa.dashboard'),
+                        \App\Enums\RoleEnum::ORANG_TUA => route('ortu.dashboard'),
+                        default => route('login'),
+                        };
+                        @endphp
+
+                        <a href="{{ $dashboardRoute }}" class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
+                            <i class="bi bi-speedometer2"></i>
                             <span>Dashboard</span>
                         </a>
                     </li>
@@ -168,6 +189,7 @@
 
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
+                    {{-- Menu Khusus Admin --}}
                     @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
@@ -177,35 +199,46 @@
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.guru.*') ? 'active' : '' }}" href="{{ route('admin.guru.index') }}">
-                            <i class="bi bi-people-fill"></i>
+                            <i class="bi bi-person-badge-fill"></i>
                             <span>Data Guru</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('mapel.*') ? 'active' : '' }}" href="#">
-                            <i class="bi bi-people-fill"></i>
+                        <a class="nav-link {{ request()->routeIs('admin.mapel.*') ? 'active' : '' }}" href="{{ route('admin.mapel.index') }}">
+                            <i class="bi bi-book-half"></i>
                             <span>Data Mata Pelajaran</span>
                         </a>
                     </li>
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
-                            <i class="bi bi-people-fill"></i>
+                            <i class="bi bi-building"></i>
                             <span>Data Kelas</span>
                         </a>
                     </li>
-                    @endif
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('guru.absensi.*') ? 'active' : '' }}" href="{{ route('guru.absensi.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.presensi.*') ? 'active' : '' }}" href="{{ route('admin.presensi.index') }}">
                             <i class="bi bi-calendar-check-fill"></i>
                             <span>Presensi Siswa</span>
                         </a>
                     </li>
+                    @endif
+
+                    {{-- Menu Khusus Guru --}}
+                    @if(Auth::user()->role === \App\Enums\RoleEnum::GURU)
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('penilaian.*') ? 'active' : '' }}" href="#">
-                            <i class="bi bi-journal-check"></i>
+                        <a class="nav-link {{ request()->routeIs('guru.nilai.*') ? 'active' : '' }}" href="{{ route('guru.nilai.index') }}">
+                            <i class="bi bi-pencil-square"></i>
                             <span>Input Penilaian</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('guru.presensi.*') ? 'active' : '' }}" href="{{ route('guru.presensi.index') }}">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <span>Presensi Siswa</span>
+                        </a>
+                    </li>
+                    @endif
+
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('rapor.*') ? 'active' : '' }}" href="#">
                             <i class="bi bi-file-earmark-text-fill"></i>
@@ -214,6 +247,8 @@
                     </li>
                 </ul>
 
+                {{-- Pengaturan Hanya Tampil Untuk Admin --}}
+                @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH || Auth::user()->role === \App\Enums\RoleEnum::SUPER_ADMIN)
                 <div class="sidebar-heading">Pengaturan</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -223,6 +258,7 @@
                         </a>
                     </li>
                 </ul>
+                @endif
             </div>
         </aside>
 
@@ -248,9 +284,6 @@
                                 <div class="fw-semibold small text-truncate" style="max-width: 150px;">
                                     {{ Auth::user()->name ?? 'Pengguna' }}
                                 </div>
-                                <!-- <span class="badge bg-primary-subtle text-primary extra-small" style="font-size: 0.7rem;">
-                                    {{ Auth::user()->role->value ?? 'Role' }}
-                                </span> -->
                             </div>
                         </a>
 
@@ -331,9 +364,8 @@
 
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Cari semua elemen alert di halaman
+            // Auto close alert 2 detik
             const alertElements = document.querySelectorAll('.alert');
-
             alertElements.forEach(function(alert) {
                 setTimeout(function() {
                     const bsAlert = bootstrap.Alert.getOrCreateInstance(alert);
@@ -342,9 +374,8 @@
                     }
                 }, 2000);
             });
-        });
 
-        document.addEventListener('DOMContentLoaded', function() {
+            // SweetAlert Confirm Delete
             document.querySelectorAll('.btn-delete').forEach(button => {
                 button.addEventListener('click', function(e) {
                     e.preventDefault();
@@ -353,14 +384,14 @@
 
                     Swal.fire({
                         title: 'Apakah Anda yakin?',
-                        html: `Data guru <strong>${nama}</strong> akan dihapus permanen!`,
+                        html: `Data <strong>${nama}</strong> akan dihapus permanen!`,
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#dc3545', // Warna merah Bootstrap
-                        cancelButtonColor: '#6c757d', // Warna abu-abu Bootstrap
+                        confirmButtonColor: '#dc3545',
+                        cancelButtonColor: '#6c757d',
                         confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Ya, Hapus!',
                         cancelButtonText: 'Batal',
-                        reverseButtons: true, // Letak tombol batal di kiri, hapus di kanan
+                        reverseButtons: true,
                         customClass: {
                             popup: 'rounded-4 border-0 shadow-lg',
                             confirmButton: 'btn btn-danger px-4 py-2 me-2',

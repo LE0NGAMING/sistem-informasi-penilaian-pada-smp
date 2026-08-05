@@ -32,4 +32,9 @@ class Kelas extends Model
     {
         return $this->belongsTo(Guru::class, 'guru_id'); // sesuaikan 'guru_id' atau 'wali_kelas_id'
     }
+
+    public function presensis()
+    {
+        return $this->hasMany(Presensi::class, 'kelas_id');
+    }
 }

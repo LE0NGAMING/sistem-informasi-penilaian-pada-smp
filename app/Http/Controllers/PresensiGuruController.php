@@ -1,60 +1,84 @@
 <?php
 
-namespace App\Http\Controllers;
+namespace App\Http\Controllers\Guru;
 
+use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
-use App\Models\Presensi;
-use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Mapel;
+use App\Models\Siswa;
+use App\Models\Nilai;
+use App\Models\Penilaian;
 
-class PresensiGuruController extends Controller
+class PenilaianController extends Controller
 {
     public function index(Request $request)
     {
-        // Parameter filter (Default: Tanggal hari ini)
-        $tanggal = $request->get('tanggal', date('Y-m-d'));
-        $kelasId = $request->get('kelas_id', 1); // Default ke kelas ID 1 jika belum ada parameter
+        $kelasList = Kelas::orderBy('nama_kelas', 'asc')->get();
+        $mapelList = Mapel::orderBy('nama_mapel', 'asc')->get();
 
-        // Ambil daftar semua kelas untuk dropdown filter
-        $daftarKelas = Kelas::all();
+        $kelasId  = $request->get('kelas_id');
+        $mapelId  = $request->get('mapel_id');
+        $semester = $request->get('semester', 'Ganjil');
 
-        // Ambil daftar siswa di kelas tersebut
-        $siswas = Siswa::where('kelas_id', $kelasId)->orderBy('nama_lengkap', 'asc')->get();
+        $siswaList = collect();
 
-        // Ambil presensi yang sudah tersimpan sebelumnya (jika ada)
-        $presensis = Presensi::where('kelas_id', $kelasId)
-            ->where('tanggal', $tanggal)
-            ->get()
-            ->keyBy('siswa_id');
+        if ($kelasId && $mapelId) {
+            $siswaList = Siswa::where('kelas_id', $kelasId)
+                ->with(['nilai' => function ($q) use ($mapelId, $semester) {
+                    $q->where('mapel_id', $mapelId)
+                        ->where('semester', $semester);
+                }])
+                ->orderBy('nama_lengkap', 'asc')
+                ->get();
+        }
 
-        return view('guru.absensi.index', compact('siswas', 'presensis', 'daftarKelas', 'kelasId', 'tanggal'));
+        return view('guru.nilai.index', compact(
+            'kelasList',
+            'mapelList',
+            'siswaList',
+            'kelasId',
+            'mapelId',
+            'semester'
+        ));
     }
 
     public function store(Request $request)
     {
         $request->validate([
             'kelas_id' => 'required',
-            'tanggal'  => 'required|date',
-            'presensi' => 'required|array',
+            'mapel_id' => 'required',
+            'semester' => 'required',
+            'nilai'    => 'required|array',
         ]);
 
-        // Simpan / Update data absensi siswa
-        foreach ($request->presensi as $siswaId => $data) {
-            Presensi::updateOrCreate(
+        foreach ($request->nilai as $siswaId => $scores) {
+            $tugas = floatval($scores['tugas'] ?? 0);
+            $uts   = floatval($scores['uts'] ?? 0);
+            $uas   = floatval($scores['uas'] ?? 0);
+
+            // Perhitungan Bobot: Tugas 30%, UTS 35%, UAS 35%
+            $nilaiAkhir = ($tugas * 0.30) + ($uts * 0.35) + ($uas * 0.35);
+
+            Penilaian::updateOrCreate(
                 [
                     'siswa_id' => $siswaId,
-                    'kelas_id' => $request->kelas_id,
-                    'tanggal'  => $request->tanggal,
+                    'mapel_id' => $request->mapel_id,
+                    'semester' => $request->semester,
                 ],
                 [
-                    'guru_id' => Auth::id(),
-                    'status'  => $data['status'],
-                    'catatan' => $data['catatan'] ?? null,
+                    'tugas'       => $tugas,
+                    'uts'         => $uts,
+                    'uas'         => $uas,
+                    'nilai_akhir' => round($nilaiAkhir, 2),
                 ]
             );
         }
 
-        return redirect()->back()->with('success', 'Presensi berhasil disimpan!');
+        return redirect()->route('guru.nilai.index', [
+            'kelas_id' => $request->kelas_id,
+            'mapel_id' => $request->mapel_id,
+            'semester' => $request->semester,
+        ])->with('success', 'Data penilaian berhasil disimpan!');
     }
 }

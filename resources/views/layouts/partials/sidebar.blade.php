@@ -69,22 +69,20 @@
         @endif
 
         <!-- AKADEMIK & NILAI -->
-        @if(in_array(auth()->user()->role, ['guru_mapel', 'wali_kelas', 'guru']))
-        <div>
-            <p class="px-3 text-[11px] font-bold text-slate-500 uppercase tracking-wider mb-2">Akademik & Nilai</p>
-            <div class="space-y-1">
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition hover:bg-slate-800 hover:text-white">
-                    <i class="bi bi-pencil-square"></i> <span>Penilaian Siswa</span>
-                </a>
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition hover:bg-slate-800 hover:text-white">
-                    <i class="bi bi-card-checklist"></i> <span>Absensi Kelas</span>
-                </a>
-                <a href="#" class="flex items-center gap-3 px-3 py-2 rounded-lg text-sm transition hover:bg-slate-800 hover:text-white">
-                    <i class="bi bi-journal-check"></i> <span>Cetak & Validasi Rapor</span>
-                </a>
-            </div>
+        <div class="list-group list-group-flush">
+            @if(auth()->user()->role === 'guru')
+            {{-- Menu Khusus Guru --}}
+            <a href="{{ route('guru.dashboard') }}" class="list-group-item list-group-item-action {{ request()->routeIs('guru.dashboard') ? 'active' : '' }}">
+                <i class="bi bi-speedometer2 me-2"></i> Dashboard
+            </a>
+            <a href="{{ route('guru.presensi.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('guru.presensi.*') ? 'active' : '' }}">
+                <i class="bi bi-calendar-check me-2"></i> Presensi Siswa
+            </a>
+            <a href="{{ route('guru.nilai.index') }}" class="list-group-item list-group-item-action {{ request()->routeIs('guru.nilai.*') ? 'active' : '' }}">
+                <i class="bi bi-pencil-square me-2"></i> Input Nilai
+            </a>
+            @endif
         </div>
-        @endif
 
         <!-- PENGATURAN -->
         <div>

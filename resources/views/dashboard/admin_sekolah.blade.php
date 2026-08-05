@@ -178,6 +178,9 @@
                 <a href="{{ route('admin.guru.create') }}" class="btn btn-outline-success btn-sm text-start py-2">
                     <i class="bi bi-person-badge-fill me-2"></i>Tambah Data Guru
                 </a>
+                <a href="{{ route('admin.mapel.create') }}" class="btn btn-outline-info btn-sm text-start py-2">
+                    <i class="bi bi-book-half me-2"></i>Tambah Data Mata Pelajaran
+                </a>
                 <a href="{{ route('admin.kelas.create') }}" class="btn btn-outline-secondary btn-sm text-start py-2">
                     <i class="bi bi-house-add-fill me-2"></i>Tambah Data Kelas
                 </a>

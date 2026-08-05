@@ -65,7 +65,6 @@ class SiswaController extends Controller
     public function edit(Siswa $siswa)
     {
         $kelases = Kelas::all();
-        // Kita load relasi user dan kelas untuk ditampilkan di form
         $siswa->load('user', 'kelas');
 
         return view('admin.siswa.edit', compact('siswa', 'kelases'));
@@ -78,16 +77,18 @@ class SiswaController extends Controller
             'nama_lengkap'  => 'required|string|max:255',
             'jenis_kelamin' => 'required|in:L,P',
             'kelas_id'      => 'required|exists:kelas,id',
-            'email'         => 'required|email|unique:users,email,' . $siswa->user_id,
+            'email'         => 'nullable|email|unique:users,email,' . $siswa->user_id, // Diubah ke nullable agar tidak gagal saat form tidak punya field email
         ]);
 
         DB::transaction(function () use ($validated, $siswa) {
-            // 1. Update User Akun
-            $siswa->user->update([
-                'name'     => $validated['nama_lengkap'],
-                'email'    => $validated['email'],
-                // 'password' tetap 'siswa123' jika tidak diubah
-            ]);
+            // 1. Update User Akun (jika relasi user ada)
+            if ($siswa->user) {
+                $userData = ['name' => $validated['nama_lengkap']];
+                if (!empty($validated['email'])) {
+                    $userData['email'] = $validated['email'];
+                }
+                $siswa->user->update($userData);
+            }
 
             // 2. Update Data Siswa
             $siswa->update([
