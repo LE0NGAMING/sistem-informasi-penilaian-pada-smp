@@ -12,6 +12,19 @@
         </a>
     </div>
 
+    {{-- Alert Error Validasi Global --}}
+    @if ($errors->any())
+    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+        <strong>Terjadi kesalahan!</strong> Mohon periksa kembali inputan Anda.
+        <ul class="mb-0 mt-2">
+            @foreach ($errors->all() as $error)
+            <li>{{ $error }}</li>
+            @endforeach
+        </ul>
+        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+    </div>
+    @endif
+
     <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-4">
             <form action="{{ route('admin.guru.update', $guru->id) }}" method="POST" enctype="multipart/form-data">
@@ -37,15 +50,24 @@
                         @enderror
                     </div>
 
+                    {{-- Gelar --}}
+                    <div class="col-md-6">
+                        <label for="gelar" class="form-label fw-semibold">Gelar Akademik</label>
+                        <input type="text" name="gelar" id="gelar" class="form-control @error('gelar') is-invalid @enderror" value="{{ old('gelar', $guru->gelar) }}" placeholder="Contoh: S.Kom., M.Pd.">
+                        @error('gelar')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
                     {{-- Jenis Kelamin --}}
                     <div class="col-md-6">
                         <label for="jenis_kelamin" class="form-label fw-semibold">Jenis Kelamin <span class="text-danger">*</span></label>
                         @php
-                        $jkValue = old('jenis_kelamin', $guru->jenis_kelamin->value ?? $guru->jenis_kelamin);
+                        $jkValue = old('jenis_kelamin', is_object($guru->jenis_kelamin) ? $guru->jenis_kelamin->value : $guru->jenis_kelamin);
                         @endphp
                         <select name="jenis_kelamin" id="jenis_kelamin" class="form-select @error('jenis_kelamin') is-invalid @enderror" required>
-                            <option value="L" {{ in_array(strtoupper(trim($jkValue)), ['L', 'LAKI-LAKI']) ? 'selected' : '' }}>Laki-laki</option>
-                            <option value="P" {{ in_array(strtoupper(trim($jkValue)), ['P', 'PEREMPUAN']) ? 'selected' : '' }}>Perempuan</option>
+                            <option value="L" {{ strtoupper($jkValue) === 'L' ? 'selected' : '' }}>Laki-laki</option>
+                            <option value="P" {{ strtoupper($jkValue) === 'P' ? 'selected' : '' }}>Perempuan</option>
                         </select>
                         @error('jenis_kelamin')
                         <div class="invalid-feedback">{{ $message }}</div>
@@ -70,11 +92,49 @@
                         @enderror
                     </div>
 
-                    {{-- Email Akun (Read-only) --}}
+                    {{-- Dropdown Bidang Mata Pelajaran --}}
                     <div class="col-md-6">
-                        <label for="email" class="form-label fw-semibold">Email Akun</label>
-                        <input type="email" class="form-control bg-light" value="{{ $guru->user->email ?? '-' }}" disabled readonly>
-                        <div class="form-text">Email akun user terhubung.</div>
+                        <label for="mapel_id" class="form-label fw-semibold">Bidang Mata Pelajaran</label>
+                        <select name="mapel_id" id="mapel_id" class="form-select @error('mapel_id') is-invalid @enderror">
+                            <option value="">-- Pilih Mata Pelajaran --</option>
+                            @foreach($mapelList as $mapel)
+                            <option value="{{ $mapel->id }}" {{ old('mapel_id', $guru->mapel_id) == $mapel->id ? 'selected' : '' }}>
+                                {{ $mapel->nama_mapel }}
+                            </option>
+                            @endforeach
+                        </select>
+                        @error('mapel_id')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Tanggal Mulai Mengajar --}}
+                    <div class="col-md-3">
+                        <label for="tanggal_mulai_mengajar" class="form-label fw-semibold">Awal Masuk Mengajar</label>
+                        <input type="date" name="tanggal_mulai_mengajar" id="tanggal_mulai_mengajar" class="form-control @error('tanggal_mulai_mengajar') is-invalid @enderror"
+                            value="{{ old('tanggal_mulai_mengajar', $guru->tanggal_mulai_mengajar ? $guru->tanggal_mulai_mengajar->format('Y-m-d') : '') }}">
+                        @error('tanggal_mulai_mengajar')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Tanggal Pensiun --}}
+                    <div class="col-md-3">
+                        <label for="tanggal_pensiun" class="form-label fw-semibold">Tanggal Pensiun</label>
+                        <input type="date" name="tanggal_pensiun" id="tanggal_pensiun" class="form-control @error('tanggal_pensiun') is-invalid @enderror"
+                            value="{{ old('tanggal_pensiun', $guru->tanggal_pensiun ? $guru->tanggal_pensiun->format('Y-m-d') : '') }}">
+                        @error('tanggal_pensiun')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
+                    </div>
+
+                    {{-- Email Akun (Bisa Diedit) --}}
+                    <div class="col-md-6">
+                        <label for="email" class="form-label fw-semibold">Email Akun <span class="text-danger">*</span></label>
+                        <input type="email" name="email" id="email" class="form-control @error('email') is-invalid @enderror" value="{{ old('email', $guru->user->email ?? '') }}" required>
+                        @error('email')
+                        <div class="invalid-feedback">{{ $message }}</div>
+                        @enderror
                     </div>
 
                     {{-- Foto Profil --}}

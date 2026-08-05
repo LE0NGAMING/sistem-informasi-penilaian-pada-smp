@@ -31,8 +31,9 @@
                             <th>Nama Lengkap</th>
                             <th>Jenis Kelamin</th>
                             <th>Tanggal Lahir</th>
+                            <th>Mata Pelajaran</th>
                             <th>No. WA/HP</th>
-                            <th>Email Akun</th>
+                            <!-- <th>Email Akun</th> -->
                             <th class="text-end pe-4">Aksi</th>
                         </tr>
                     </thead>
@@ -65,8 +66,9 @@
                                 @endif
                             </td>
                             <td>{{ $guru->tanggal_lahir ? $guru->tanggal_lahir->translatedFormat('d F Y') : '-' }}</td>
+                            <td>{{ $guru->mapel->nama_mapel ?? '-' }}</td>
                             <td><span class="text-muted small">{{ $guru->no_hp ?? '-' }}</span></td>
-                            <td class="text-muted small">{{ $guru->user->email ?? '-' }}</td>
+                            <!-- <td class="text-muted small">{{ $guru->user->email ?? '-' }}</td> -->
                             <td class="text-end pe-4">
                                 <div class="d-inline-flex gap-2">
                                     <a href="{{ route('admin.guru.edit', $guru->id) }}" class="btn btn-sm btn-outline-warning" title="Edit">

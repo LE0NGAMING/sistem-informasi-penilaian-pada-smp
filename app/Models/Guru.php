@@ -20,12 +20,13 @@ class Guru extends Model
         'nip',
         'nama_lengkap',
         'gelar',
-        //'gelar_belakang',
         'jenis_kelamin',
         'tanggal_lahir',
         'no_hp',
-        'foto_path'
-        //'jabatan',
+        'foto_path',
+        'mapel_id',
+        'tanggal_mulai_mengajar',
+        'tanggal_pensiun',
     ];
 
     public function user(): BelongsTo
@@ -43,6 +44,11 @@ class Guru extends Model
         return $this->hasMany(Penilaian::class, 'guru_id');
     }
 
+    public function mapel()
+    {
+        return $this->belongsTo(Mapel::class, 'mapel_id');
+    }
+
     public function getNamaGelarAttribute(): string
     {
         $depan = $this->gelar_depan ? $this->gelar_depan . ' ' : '';
@@ -58,6 +64,8 @@ class Guru extends Model
     }
 
     protected $casts = [
-        'tanggal_lahir' => 'date',
+        'tanggal_lahir'          => 'date',
+        'tanggal_mulai_mengajar' => 'date',
+        'tanggal_pensiun'        => 'date',
     ];
 }
