@@ -4,12 +4,14 @@
 <div class="container-fluid px-4 py-3">
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1">Master Data Guru</h3>
-            <p class="text-muted small mb-0">Kelola data tenaga pengajar dan profil pengajar.</p>
+            <h3 class="fw-bold mb-1">Daftar Data Guru</h3>
+            <!-- <p class="text-muted small mb-0">Kelola data tenaga pengajar dan profil pengajar.</p> -->
         </div>
-        <a href="{{ route('admin.guru.create') }}" class="btn btn-primary btn-sm px-3 shadow-sm">
-            <i class="bi bi-person-plus-fill me-1"></i> Tambah Guru
+        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+        <a href="{{ route('admin.guru.create') }}" class="btn btn-primary px-3">
+            <i class="bi bi-plus-lg me-1"></i> Tambah Data
         </a>
+        @endif
     </div>
 
     <!-- @if(session('success'))
@@ -18,6 +20,46 @@
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif -->
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form action="{{ route('admin.guru.index') }}" method="GET" class="row g-2 align-items-center">
+                {{-- Input Pencarian --}}
+                <div class="col-md-5 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-0"
+                            placeholder="Cari NIP, NUPTK, atau Nama Guru..."
+                            value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                {{-- Dropdown Mapel --}}
+                <div class="col-md-4 col-lg-3">
+                    <select name="mapel_id" class="form-select">
+                        <option value="">-- Semua Mata Pelajaran --</option>
+                        @foreach($mapels as $mapel)
+                        <option value="{{ $mapel->id }}" {{ request('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                            {{ $mapel->nama_mapel }}
+                        </option>
+                        @endforeach
+                    </select>
+                </div>
+
+                {{-- Tombol Aksi --}}
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary px-3">Cari</button>
+                    @if(request('search') || request('mapel_id'))
+                    <a href="{{ route('admin.guru.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
+                        Reset
+                    </a>
+                    @endif
+                </div>
+            </form>
+        </div>
+    </div>
 
     <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-0">
@@ -34,7 +76,9 @@
                             <th>Mata Pelajaran</th>
                             <th>No. WA/HP</th>
                             <!-- <th>Email Akun</th> -->
+                            @if(auth()->user()->role === 'admin')
                             <th class="text-end pe-4">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -69,23 +113,20 @@
                             <td>{{ $guru->mapel->nama_mapel ?? '-' }}</td>
                             <td><span class="text-muted small">{{ $guru->no_hp ?? '-' }}</span></td>
                             <!-- <td class="text-muted small">{{ $guru->user->email ?? '-' }}</td> -->
-                            <td class="text-end pe-4">
-                                <div class="d-inline-flex gap-2">
-                                    <a href="{{ route('admin.guru.edit', $guru->id) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <form action="{{ route('admin.guru.destroy', $guru->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-danger btn-delete"
-                                            data-nama="{{ $guru->nama_lengkap }}"
-                                            title="Hapus">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                            @if(auth()->user()->role === 'admin')
+                            <td class="text-center">
+                                <a href="{{ route('guru.edit', $guru->id) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ route('guru.destroy', $guru->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

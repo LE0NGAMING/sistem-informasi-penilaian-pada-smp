@@ -8,9 +8,26 @@ use Illuminate\Http\Request;
 
 class MapelController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        $mapels = Mapel::latest()->paginate(10);
+        $query = Mapel::query();
+
+        // Filter Pencarian Text (Kode Mapel atau Nama Mapel)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('kode_mapel', 'like', "%{$search}%")
+                    ->orWhere('nama_mapel', 'like', "%{$search}%");
+            });
+        }
+
+        // Filter Dropdown Kelompok Mapel (misal: Kelompok A, B, C / Umum, Peminatan)
+        if ($request->filled('kelompok')) {
+            $query->where('kelompok', $request->kelompok);
+        }
+
+        $mapels = $query->latest()->paginate(10)->withQueryString();
+
         return view('admin.mapel.index', compact('mapels'));
     }
 

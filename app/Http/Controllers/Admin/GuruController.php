@@ -15,11 +15,27 @@ use Illuminate\Validation\Rule;
 
 class GuruController extends Controller
 {
-    public function index()
+    public function index(Request $request)
     {
-        // Eager load 'user' dan 'mapel' agar efisien
-        $gurus = Guru::with(['user', 'mapel'])->latest()->paginate(10);
-        return view('admin.guru.index', compact('gurus'));
+        $query = Guru::with('mapel');
+
+        // Filter Pencarian Text (NIP, NUPTK, atau Nama)
+        if ($request->filled('search')) {
+            $search = $request->search;
+            $query->where(function ($q) use ($search) {
+                $q->where('nip', 'like', "%{$search}%")
+                    ->orWhere('nuptk', 'like', "%{$search}%")
+                    ->orWhere('nama_lengkap', 'like', "%{$search}%");
+            });
+        }
+        if ($request->filled('mapel_id')) {
+            $query->where('mapel_id', $request->mapel_id);
+        }
+
+        $gurus = $query->latest()->paginate(10)->withQueryString();
+        $mapels = Mapel::all(); // Untuk isi pilihan dropdown filter mapel
+
+        return view('admin.guru.index', compact('gurus', 'mapels'));
     }
 
     public function create()

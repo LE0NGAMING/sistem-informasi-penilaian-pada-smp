@@ -10,7 +10,7 @@ class Penilaian extends Model
     use HasFactory;
 
     // Sesuaikan nama tabel jika di database memakai nama lain (misal: 'nilais')
-    protected $table = 'penilaians';
+    protected $table = 'penilaian';
 
     protected $fillable = [
         'siswa_id',

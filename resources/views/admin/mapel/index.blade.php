@@ -5,12 +5,52 @@
     {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
-            <h3 class="fw-bold mb-1">Master Data Mata Pelajaran</h3>
-            <p class="text-muted small mb-0">Kelola daftar mata pelajaran yang diajarkan di sekolah.</p>
+            <h3 class="fw-bold mb-1">Daftar Data Mata Pelajaran</h3>
+            <!-- <p class="text-muted small mb-0">Kelola daftar mata pelajaran yang diajarkan di sekolah.</p> -->
         </div>
+        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
         <a href="{{ route('admin.mapel.create') }}" class="btn btn-primary px-3">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Mapel
+            <i class="bi bi-plus-lg me-1"></i> Tambah Data
         </a>
+        @endif
+    </div>
+
+    <div class="card border-0 shadow-sm rounded-3 mb-4">
+        <div class="card-body p-3">
+            <form action="{{ route('admin.mapel.index') }}" method="GET" class="row g-2 align-items-center">
+                {{-- Input Pencarian Kode / Nama --}}
+                <div class="col-md-5 col-lg-4">
+                    <div class="input-group">
+                        <span class="input-group-text bg-white text-muted border-end-0">
+                            <i class="bi bi-search"></i>
+                        </span>
+                        <input type="text" name="search" class="form-control border-start-0 ps-0"
+                            placeholder="Cari Kode atau Nama Mapel..."
+                            value="{{ request('search') }}">
+                    </div>
+                </div>
+
+                {{-- Dropdown Kelompok Mapel --}}
+                <div class="col-md-4 col-lg-3">
+                    <select name="kelompok" class="form-select">
+                        <option value="">-- Semua Kelompok --</option>
+                        <option value="Kelompok A" {{ request('kelompok') == 'Kelompok A' ? 'selected' : '' }}>Kelompok A (Umum)</option>
+                        <option value="Kelompok B" {{ request('kelompok') == 'Kelompok B' ? 'selected' : '' }}>Kelompok B (Muatan Lokal/Seni)</option>
+                        <option value="Kelompok C" {{ request('kelompok') == 'Kelompok C' ? 'selected' : '' }}>Kelompok C (Peminatan)</option>
+                    </select>
+                </div>
+
+                {{-- Tombol Aksi --}}
+                <div class="col-auto">
+                    <button type="submit" class="btn btn-primary px-3">Cari</button>
+                    @if(request('search') || request('kelompok'))
+                    <a href="{{ route('admin.mapel.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
+                        Reset
+                    </a>
+                    @endif
+                </div>
+            </form>
+        </div>
     </div>
 
     {{-- Tabel Data Mapel --}}
@@ -24,7 +64,9 @@
                             <th style="width: 150px;">Kode Mapel</th>
                             <th>Nama Mata Pelajaran</th>
                             <th>Kelompok</th>
+                            @if(auth()->user()->role === 'admin')
                             <th class="text-end pe-4" style="width: 150px;">Aksi</th>
+                            @endif
                         </tr>
                     </thead>
                     <tbody>
@@ -50,23 +92,20 @@
                                 <span class="text-muted small">-</span>
                                 @endif
                             </td>
-                            <td class="text-end pe-4">
-                                <div class="d-inline-flex gap-2">
-                                    <a href="{{ route('admin.mapel.edit', $mapel->id) }}" class="btn btn-sm btn-outline-warning" title="Edit">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <form action="{{ route('admin.mapel.destroy', $mapel->id) }}" method="POST" class="d-inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="button"
-                                            class="btn btn-sm btn-outline-danger btn-delete"
-                                            data-nama="{{ $mapel->nama_mapel }}"
-                                            title="Hapus">
-                                            <i class="bi bi-trash-fill"></i>
-                                        </button>
-                                    </form>
-                                </div>
+                            @if(auth()->user()->role === 'admin')
+                            <td class="text-center">
+                                <a href="{{ route('mapel.edit', $mapel->id) }}" class="btn btn-sm btn-outline-warning">
+                                    <i class="bi bi-pencil-square"></i>
+                                </a>
+                                <form action="{{ route('mapel.destroy', $mapel->id) }}" method="POST" class="d-inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data?')">
+                                        <i class="bi bi-trash"></i>
+                                    </button>
+                                </form>
                             </td>
+                            @endif
                         </tr>
                         @empty
                         <tr>

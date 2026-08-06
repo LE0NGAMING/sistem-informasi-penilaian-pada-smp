@@ -14,11 +14,19 @@ class Rombel extends Model
     protected $table = 'rombel';
 
     protected $fillable = [
-        'nama_rombel', // Contoh: 7A, 8B, 9C
-        'tingkat',     // 7, 8, atau 9
-        'tahun_ajaran_id',
-        'wali_kelas_id',
+        'nama_rombel',     // Contoh: 7-A, 8-B, 9-C
+        'tingkat',        // Mengacu ke tabel kelas (Tingkat 7, 8, 9)
+        'tahun_ajaran_id', // Mengacu ke tabel tahun_ajaran
+        'wali_kelas_id',   // Mengacu ke tabel guru
     ];
+
+    /**
+     * Relasi ke Tingkat Kelas (Kelas 7, 8, 9).
+     */
+    public function kelas(): BelongsTo
+    {
+        return $this->belongsTo(Kelas::class, 'tingkat');
+    }
 
     /**
      * Relasi ke Tahun Ajaran.

@@ -3,7 +3,6 @@
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\ProfileController;
-use App\Http\Controllers\PresensiGuruController;
 use App\Http\Controllers\SuperAdmin\DashboardController;
 use App\Http\Controllers\SuperAdmin\UserController;
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
@@ -16,7 +15,7 @@ use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\PresensiController;
 
-// Import Controller Guru untuk Penilaian dan Presensi
+// Import Controller Guru untuk Penilaian
 use App\Http\Controllers\Guru\PenilaianController;
 use Illuminate\Support\Facades\Route;
 
@@ -35,7 +34,9 @@ Route::middleware('auth')->group(function () {
     // Route Logout
     Route::post('/logout', [LoginController::class, 'logout'])->name('logout');
 
-    // Super Admin Routes
+    // ==========================================
+    // 1. SUPER ADMIN ROUTES
+    // ==========================================
     Route::middleware('role:' . RoleEnum::SUPER_ADMIN->value)
         ->prefix('super-admin')
         ->name('superadmin.')
@@ -44,69 +45,104 @@ Route::middleware('auth')->group(function () {
             Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
         });
 
-    // Admin Sekolah Routes (Dashboard & Master Data)
+    // ==========================================
+    // 2. READ-ONLY MASTER DATA (ADMIN & GURU)
+    // ==========================================
+    // Guru & Admin Sekolah dapat melihat daftar dan detail data
+    Route::middleware('role:' . RoleEnum::ADMIN_SEKOLAH->value . ',' . RoleEnum::GURU->value)
+        ->prefix('admin')
+        ->name('admin.')
+        ->group(function () {
+            // View Data Siswa
+            Route::get('/siswa', [SiswaController::class, 'index'])->name('siswa.index');
+            Route::get('/siswa/{siswa}', [SiswaController::class, 'show'])->name('siswa.show');
+
+            // View Data Guru
+            Route::get('/guru', [GuruController::class, 'index'])->name('guru.index');
+            Route::get('/guru/{guru}', [GuruController::class, 'show'])->name('guru.show');
+
+            // View Data Mapel
+            Route::get('/mapel', [MapelController::class, 'index'])->name('mapel.index');
+            Route::get('/mapel/{mapel}', [MapelController::class, 'show'])->name('mapel.show');
+        });
+
+    // ==========================================
+    // 3. ADMIN SEKOLAH ROUTES (FULL CUD ACCESS)
+    // ==========================================
     Route::middleware('role:' . RoleEnum::ADMIN_SEKOLAH->value)
         ->prefix('admin')
         ->name('admin.')
         ->group(function () {
-            // Arahkan dashboard ke DashboardController
             Route::get('/dashboard', [AdminDashboardController::class, 'index'])->name('dashboard');
 
-            // --- Presensi Routes ---
+            // Master Data CUD (Create, Update, Delete)
+            Route::resource('kelas', KelasController::class);
+            Route::resource('rombel', RombelController::class);
+
+            // Exclude 'index' & 'show' karena sudah didefinisikan di grup gabungan di atas
+            Route::resource('siswa', SiswaController::class)->except(['index', 'show']);
+            Route::resource('guru', GuruController::class)->except(['index', 'show']);
+            Route::resource('mapel', MapelController::class)->except(['index', 'show']);
+
+            // Presensi Routes Admin
             Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi.index');
             Route::post('/presensi', [PresensiController::class, 'store'])->name('presensi.store');
             Route::get('/presensi/rekap', [PresensiController::class, 'rekap'])->name('presensi.rekap');
 
-            // --- Nilai Routes ---
+            // Nilai Routes Admin
             Route::get('/nilai', [PenilaianController::class, 'index'])->name('nilai.index');
             Route::post('/nilai', [PenilaianController::class, 'store'])->name('nilai.store');
-
-            // --- Master Data Routes ---
-            Route::resource('kelas', KelasController::class);
-            Route::resource('mapel', MapelController::class);
-            Route::resource('siswa', SiswaController::class);
-            Route::resource('rombel', RombelController::class);
-            Route::resource('guru', GuruController::class);
-            Route::resource('presensi', PresensiController::class);
         });
 
-    // Kepala Sekolah Dashboard
+    // ==========================================
+    // 4. KEPALA SEKOLAH ROUTES
+    // ==========================================
     Route::middleware('role:' . RoleEnum::KEPALA_SEKOLAH->value)->group(function () {
         Route::get('/kepala-sekolah/dashboard', fn() => view('kepalasekolah.dashboard'))->name('kepalasekolah.dashboard');
     });
 
-    // Kurikulum Dashboard
+    // ==========================================
+    // 5. KURIKULUM ROUTES
+    // ==========================================
     Route::middleware('role:' . RoleEnum::KURIKULUM->value)->group(function () {
         Route::get('/kurikulum/dashboard', fn() => view('dashboard.kurikulum'))->name('kurikulum.dashboard');
     });
 
-    // Guru Routes (Dashboard & Absensi)
+    // ==========================================
+    // 6. GURU ROUTES (DASHBOARD, PRESENSI & NILAI)
+    // ==========================================
     Route::middleware('role:' . RoleEnum::GURU->value)
         ->prefix('guru')
         ->name('guru.')
         ->group(function () {
             Route::get('/dashboard', fn() => view('guru.dashboard'))->name('dashboard');
 
-            // Menu Presensi Siswa
+            // Menu Presensi Siswa oleh Guru
             Route::get('/presensi', [PresensiController::class, 'index'])->name('presensi.index');
             Route::post('/presensi', [PresensiController::class, 'store'])->name('presensi.store');
 
-            // Menu Input Nilai
+            // Menu Input Nilai oleh Guru
             Route::get('/nilai', [PenilaianController::class, 'index'])->name('nilai.index');
             Route::post('/nilai', [PenilaianController::class, 'store'])->name('nilai.store');
         });
 
-    // Siswa Dashboard
+    // ==========================================
+    // 7. SISWA ROUTES
+    // ==========================================
     Route::middleware('role:' . RoleEnum::SISWA->value)->group(function () {
         Route::get('/siswa/dashboard', fn() => view('dashboard.siswa'))->name('siswa.dashboard');
     });
 
-    // Orang Tua Dashboard
+    // ==========================================
+    // 8. ORANG TUA ROUTES
+    // ==========================================
     Route::middleware('role:' . RoleEnum::ORANG_TUA->value)->group(function () {
         Route::get('/orang-tua/dashboard', fn() => view('dashboard.ortu'))->name('ortu.dashboard');
     });
 
-    // Route Pengaturan Profil & Password
+    // ==========================================
+    // 9. PROFILE & PASSWORD ROUTES
+    // ==========================================
     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
     Route::put('/profile', [ProfileController::class, 'update'])->name('profile.update');
     Route::put('/profile/password', [ProfileController::class, 'updatePassword'])->name('profile.password.update');

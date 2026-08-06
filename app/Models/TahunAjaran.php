@@ -2,6 +2,7 @@
 
 namespace App\Models;
 
+use Illuminate\Database\Eloquent\Builder;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
@@ -22,9 +23,18 @@ class TahunAjaran extends Model
     ];
 
     /**
+     * Scope untuk mempermudah query Tahun Ajaran yang sedang Aktif.
+     * Penggunaan di Controller: TahunAjaran::active()->first();
+     */
+    public function scopeActive(Builder $query): Builder
+    {
+        return $query->where('is_active', true);
+    }
+
+    /**
      * Relasi ke daftar Semester dalam tahun ajaran ini.
      */
-    public function semester(): HasMany
+    public function semesters(): HasMany
     {
         return $this->hasMany(Semester::class, 'tahun_ajaran_id');
     }
@@ -32,7 +42,7 @@ class TahunAjaran extends Model
     /**
      * Relasi ke Rombel yang terdaftar di tahun ajaran ini.
      */
-    public function rombel(): HasMany
+    public function rombels(): HasMany
     {
         return $this->hasMany(Rombel::class, 'tahun_ajaran_id');
     }
@@ -40,7 +50,7 @@ class TahunAjaran extends Model
     /**
      * Relasi ke Aturan KKM per tahun ajaran.
      */
-    public function kkm(): HasMany
+    public function kkms(): HasMany
     {
         return $this->hasMany(KKM::class, 'tahun_ajaran_id');
     }

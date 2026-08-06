@@ -171,7 +171,7 @@
                         $dashboardRoute = match($userRole) {
                         \App\Enums\RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
                         \App\Enums\RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
-                        \App\Enums\RoleEnum::KEPALA_SEKOLAH => route('kepsek.dashboard'),
+                        \App\Enums\RoleEnum::KEPALA_SEKOLAH => route('kepalasekolah.dashboard'),
                         \App\Enums\RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
                         \App\Enums\RoleEnum::GURU => route('guru.dashboard'),
                         \App\Enums\RoleEnum::SISWA => route('siswa.dashboard'),
@@ -189,8 +189,8 @@
 
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
-                    {{-- Menu Khusus Admin --}}
-                    @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                    {{-- Menu Master Data (Tampil untuk Admin & Guru) --}}
+                    @if(in_array(Auth::user()->role, [\App\Enums\RoleEnum::ADMIN_SEKOLAH, \App\Enums\RoleEnum::GURU]))
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
                             <i class="bi bi-people-fill"></i>
@@ -209,10 +209,14 @@
                             <span>Data Mata Pelajaran</span>
                         </a>
                     </li>
+                    @endif
+
+                    {{-- Menu Khusus Admin Sekolah --}}
+                    @if(Auth::user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('admin.kelas.*') ? 'active' : '' }}" href="{{ route('admin.kelas.index') }}">
+                        <a class="nav-link {{ request()->routeIs('admin.rombel.*') ? 'active' : '' }}" href="{{ route('admin.rombel.index') }}">
                             <i class="bi bi-building"></i>
-                            <span>Data Kelas</span>
+                            <span>Data Rombel</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -293,12 +297,12 @@
                                 <small class="text-muted">{{ Auth::user()->email ?? '' }}</small>
                             </li>
                             <li>
-                                <a class="dropdown-item py-2" href="#">
+                                <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
                                     <i class="bi bi-person me-2 text-secondary"></i>Profil Saya
                                 </a>
                             </li>
                             <li>
-                                <a class="dropdown-item py-2" href="#">
+                                <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
                                     <i class="bi bi-key me-2 text-secondary"></i>Ubah Password
                                 </a>
                             </li>
