@@ -10,6 +10,8 @@ use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Auth\LoginController;
 use App\Http\Controllers\Guru\PenilaianController;
+use App\Http\Controllers\Guru\RekapPenilaianController;
+use App\Http\Controllers\Guru\RaporController;
 use App\Http\Controllers\ProfileController;
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\UserController;
@@ -112,6 +114,17 @@ Route::middleware('auth')->group(function () {
             // Penilaian Guru
             Route::get('/nilai', [PenilaianController::class, 'index'])->name('nilai.index');
             Route::post('/nilai', [PenilaianController::class, 'store'])->name('nilai.store');
+
+            // Rekap Penilaian
+            //Route::prefix('rekap')->name('rekap.')->group(function () {
+            Route::get('/rekap', [RekapPenilaianController::class, 'index'])->name('rekap.index');
+            Route::get('/rekap/cetak', [RekapPenilaianController::class, 'cetak'])->name('rekap.cetak');
+            // });
+
+            //Route::controller(RaporController::class)->prefix('rapor')->name('rapor.')->group(function () {
+            Route::get('/rapor/siswa/{siswa}', [RaporController::class, 'cetakSiswa'])->name('rapor.siswa');
+            Route::get('/rapor/rombel/{rombel}', [RaporController::class, 'cetakRombel'])->name('rapor.rombel');
+            // });
         });
 
     // =========================================================================

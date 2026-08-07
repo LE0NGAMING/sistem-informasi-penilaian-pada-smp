@@ -16,41 +16,47 @@ use Illuminate\View\View;
 
 class PenilaianController extends Controller
 {
+    /**
+     * Menampilkan lembar input dan daftar penilaian siswa.
+     */
     public function index(Request $request): View
     {
         $rombelId = $request->query('rombel_id');
         $mapelId = $request->query('mapel_id');
-        $semesterId = $request->query('semester_id');
+        $semester = $request->query('semester_id');
 
         $siswaList = collect();
 
-        if ($rombelId && $mapelId && $semesterId) {
+        if ($rombelId && $mapelId && $semester) {
             $siswaList = Siswa::query()
                 ->where('rombel_id', $rombelId)
-                ->with(['penilaian' => function ($query) use ($mapelId, $semesterId) {
+                ->with(['penilaian' => function ($query) use ($mapelId, $semester) {
                     $query->where('mapel_id', $mapelId)
-                        ->where('semester_id', $semesterId);
+                        ->where('semester', $semester); // Disesuaikan ke nama kolom 'semester' di DB
                 }])
                 ->orderBy('nama_lengkap')
                 ->get();
         }
 
         return view('guru.nilai.index', [
-            'rombelList'   => Rombel::orderBy('nama_rombel')->get(),
-            'mapelList'    => Mapel::orderBy('nama_mapel')->get(),
+            'rombelList'   => Rombel::select('id', 'nama_rombel')->orderBy('nama_rombel')->get(),
+            'mapelList'    => Mapel::select('id', 'nama_mapel')->orderBy('nama_mapel')->get(),
             'semesterList' => SemesterEnum::cases(),
             'siswaList'    => $siswaList,
             'rombelId'     => $rombelId,
             'mapelId'      => $mapelId,
-            'semesterId'   => $semesterId,
+            'semesterId'   => $semester,
         ]);
     }
 
+    /**
+     * Menyimpan atau memperbarui data penilaian siswa secara masal.
+     */
     public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'rombel_id'            => ['required', 'exists:rombels,id'],
-            'mapel_id'             => ['required', 'exists:mapels,id'],
+            'rombel_id'            => ['required', 'exists:rombel,id'],
+            'mapel_id'             => ['required', 'exists:mapel,id'],
             'semester_id'          => ['required', Rule::enum(SemesterEnum::class)],
             'nilai'                => ['required', 'array'],
             'nilai.*.nilai_harian' => ['nullable', 'numeric', 'min:0', 'max:100'],
@@ -78,7 +84,7 @@ class PenilaianController extends Controller
                     2
                 );
 
-                // Penentuan Predikat dengan ekspresi Match (PHP 8+)
+                // Penentuan Predikat
                 $predikat = match (true) {
                     $nilaiAkhir >= 90 => 'A',
                     $nilaiAkhir >= 80 => 'B',
@@ -88,10 +94,10 @@ class PenilaianController extends Controller
 
                 Penilaian::updateOrCreate(
                     [
-                        'siswa_id'    => $siswaId,
-                        'mapel_id'    => $validated['mapel_id'],
-                        'rombel_id'   => $validated['rombel_id'],
-                        'semester_id' => $validated['semester_id'],
+                        'siswa_id'  => $siswaId,
+                        'mapel_id'  => $validated['mapel_id'],
+                        'rombel_id' => $validated['rombel_id'],
+                        'semester'  => $validated['semester_id'], // Disesuaikan ke nama kolom 'semester' di DB
                     ],
                     [
                         'nilai_harian' => $harian,

@@ -41,7 +41,7 @@
                     <label for="semester_id" class="form-label small fw-semibold text-secondary">Semester</label>
                     <select name="semester_id" id="semester_id" class="form-select rounded-3" required>
                         <option value="">-- Pilih Semester --</option>
-                        @foreach(\App\Enums\SemesterEnum::cases() as $semester)
+                        @foreach($semesterList as $semester)
                         <option value="{{ $semester->value }}" @selected($semesterId==$semester->value)>
                             {{ $semester->label() }}
                         </option>
@@ -60,7 +60,7 @@
 
     {{-- Form Input Nilai --}}
     @if($rombelId && $mapelId && $semesterId)
-    <form action="{{ route('guru.nilai.store') }}" method="POST">
+    <form id="formPenilaian" action="{{ route('guru.nilai.store') }}" method="POST">
         @csrf
         <input type="hidden" name="rombel_id" value="{{ $rombelId }}">
         <input type="hidden" name="mapel_id" value="{{ $mapelId }}">
@@ -72,34 +72,49 @@
                     <h6 class="fw-bold mb-0 text-dark">Daftar Penilaian Siswa</h6>
                     <small class="text-muted">Bobot: Harian (15%), Tugas (15%), Quiz (10%), UTS (20%), UAS (20%), Praktik (20%) | KKM: 75</small>
                 </div>
+
+                {{-- Group Aksi / Shortcut Tombol Header --}}
+                <div class="d-flex align-items-center gap-2 flex-wrap">
+                    <a href="{{ route('guru.rekap.index', ['rombel_id' => $rombelId, 'mapel_id' => $mapelId, 'semester_id' => $semesterId]) }}"
+                        class="btn btn-outline-primary btn-sm rounded-3 fw-semibold btn-rekap-guard">
+                        <i class="bi bi-file-earmark-text me-1"></i> Lihat Rekap Rombel
+                    </a>
+                    <a href="{{ route('guru.rapor.rombel', ['rombel' => $rombelId, 'semester_id' => $semesterId]) }}"
+                        target="_blank"
+                        class="btn btn-outline-danger btn-sm rounded-3 fw-semibold">
+                        <i class="bi bi-file-earmark-pdf me-1"></i> Cetak Rapor Rombel
+                    </a>
+                </div>
             </div>
 
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="min-width: 1200px;">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 1250px;">
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4" style="width: 50px;">No</th>
                                 <th style="width: 200px;">Nama Siswa</th>
-                                <th style="width: 90px;">Harian</th>
-                                <th style="width: 90px;">Tugas</th>
-                                <th style="width: 90px;">Quiz</th>
-                                <th style="width: 90px;">UTS</th>
-                                <th style="width: 90px;">UAS</th>
-                                <th style="width: 90px;">Praktik</th>
-                                <th style="width: 90px;">Akhir</th>
+                                <th style="width: 80px;">Harian</th>
+                                <th style="width: 80px;">Tugas</th>
+                                <th style="width: 80px;">Quiz</th>
+                                <th style="width: 80px;">UTS</th>
+                                <th style="width: 80px;">UAS</th>
+                                <th style="width: 80px;">Praktik</th>
+                                <th style="width: 80px;">Akhir</th>
                                 <th style="width: 80px;">Predikat</th>
-                                <th style="width: 90px;">Remedial</th>
-                                <th class="pe-4" style="width: 180px;">Catatan</th>
+                                <th style="width: 90px;" class="text-center">Status</th>
+                                <th style="width: 160px;">Catatan</th>
+                                <th class="pe-4 text-center" style="width: 70px;">Cetak</th>
                             </tr>
                         </thead>
                         <tbody>
-                            @forelse($siswaList as $index => $siswa)
+                            @forelse($siswaList as $siswa)
                             @php
                             $nilai = $siswa->penilaian->first();
+                            $hasNilai = !is_null($nilai?->is_remedial);
                             @endphp
                             <tr class="row-nilai" data-siswa-id="{{ $siswa->id }}">
-                                <td class="ps-4 fw-semibold text-secondary">{{ $index + 1 }}</td>
+                                <td class="ps-4 fw-semibold text-secondary">{{ $loop->iteration }}</td>
                                 <td>
                                     <div class="fw-semibold text-dark">{{ $siswa->nama_lengkap }}</div>
                                     <small class="text-muted">NISN: {{ $siswa->nisn ?? '-' }}</small>
@@ -107,38 +122,38 @@
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][nilai_harian]"
-                                        value="{{ $nilai?->nilai_harian }}"
-                                        class="form-control form-control-sm input-harian" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.nilai_harian", $nilai?->nilai_harian) }}"
+                                        class="form-control form-control-sm input-score input-harian" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][tugas]"
-                                        value="{{ $nilai?->tugas }}"
-                                        class="form-control form-control-sm input-tugas" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.tugas", $nilai?->tugas) }}"
+                                        class="form-control form-control-sm input-score input-tugas" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][quiz]"
-                                        value="{{ $nilai?->quiz }}"
-                                        class="form-control form-control-sm input-quiz" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.quiz", $nilai?->quiz) }}"
+                                        class="form-control form-control-sm input-score input-quiz" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][uts]"
-                                        value="{{ $nilai?->uts }}"
-                                        class="form-control form-control-sm input-uts" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.uts", $nilai?->uts) }}"
+                                        class="form-control form-control-sm input-score input-uts" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][uas]"
-                                        value="{{ $nilai?->uas }}"
-                                        class="form-control form-control-sm input-uas" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.uas", $nilai?->uas) }}"
+                                        class="form-control form-control-sm input-score input-uas" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][praktik]"
-                                        value="{{ $nilai?->praktik }}"
-                                        class="form-control form-control-sm input-praktik" placeholder="0">
+                                        value="{{ old("nilai.{$siswa->id}.praktik", $nilai?->praktik) }}"
+                                        class="form-control form-control-sm input-score input-praktik" placeholder="0">
                                 </td>
                                 <td>
                                     <span class="fw-bold fs-6 text-primary score-akhir">
@@ -146,27 +161,41 @@
                                     </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary badge-predikat">
+                                    <span @class([ 'badge badge-predikat' , 'bg-success'=> $nilai?->predikat === 'A',
+                                        'bg-info text-dark' => $nilai?->predikat === 'B',
+                                        'bg-warning text-dark' => $nilai?->predikat === 'C',
+                                        'bg-danger' => $nilai?->predikat === 'D',
+                                        'bg-secondary' => !$nilai?->predikat,
+                                        ])>
                                         {{ $nilai?->predikat ?? '-' }}
                                     </span>
                                 </td>
-                                <td>
-                                    <span @class([ 'badge' , 'badge-remedial' , 'bg-danger'=> $nilai?->is_remedial,
-                                        'bg-success' => ! $nilai?->is_remedial,
+                                <td class="text-center">
+                                    <span @class([ 'badge badge-remedial' , 'bg-danger'=> $hasNilai && $nilai->is_remedial,
+                                        'bg-success' => $hasNilai && !$nilai->is_remedial,
+                                        'bg-secondary' => !$hasNilai,
                                         ])>
-                                        {{ $nilai?->is_remedial ? 'Ya' : 'Tidak' }}
+                                        {{ $hasNilai ? ($nilai->is_remedial ? 'Remedial' : 'Tuntas') : '-' }}
                                     </span>
                                 </td>
-                                <td class="pe-4">
+                                <td>
                                     <input type="text"
                                         name="nilai[{{ $siswa->id }}][catatan]"
-                                        value="{{ $nilai?->catatan }}"
+                                        value="{{ old("nilai.{$siswa->id}.catatan", $nilai?->catatan) }}"
                                         class="form-control form-control-sm" placeholder="Catatan...">
+                                </td>
+                                <td class="pe-4 text-center">
+                                    <a href="{{ route('guru.rapor.siswa', ['siswa' => $siswa->id, 'semester_id' => $semesterId]) }}"
+                                        target="_blank"
+                                        class="btn btn-sm btn-outline-danger rounded-3 px-2 py-1"
+                                        title="Cetak Rapor PDF Siswa Ini">
+                                        <i class="bi bi-file-earmark-pdf"></i>
+                                    </a>
                                 </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="12" class="text-center py-4 text-muted">
+                                <td colspan="13" class="text-center py-4 text-muted">
                                     <i class="bi bi-person-x fs-3 d-block mb-2"></i>
                                     Tidak ada data siswa ditemukan untuk rombel ini.
                                 </td>
@@ -199,86 +228,96 @@
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', () => {
-        const rows = document.querySelectorAll('.row-nilai');
+        const formPenilaian = document.getElementById('formPenilaian');
+        if (!formPenilaian) return;
 
-        rows.forEach((row) => {
-            const inputs = {
-                harian: row.querySelector('.input-harian'),
-                tugas: row.querySelector('.input-tugas'),
-                quiz: row.querySelector('.input-quiz'),
-                uts: row.querySelector('.input-uts'),
-                uas: row.querySelector('.input-uas'),
-                praktik: row.querySelector('.input-praktik'),
+        let isFormDirty = false;
+
+        // 1. Unsaved Changes Guard
+        formPenilaian.addEventListener('input', () => isFormDirty = true);
+        formPenilaian.addEventListener('submit', () => isFormDirty = false);
+
+        document.querySelectorAll('.btn-rekap-guard').forEach(btn => {
+            btn.addEventListener('click', (e) => {
+                if (isFormDirty) {
+                    const confirmLeave = confirm('Ada nilai yang belum disimpan! Perubahan akan hilang jika berpindah halaman. Lanjutkan?');
+                    if (!confirmLeave) e.preventDefault();
+                }
+            });
+        });
+
+        // 2. Calculation logic function
+        const calculateRowScore = (row) => {
+            const getVal = (selector) => {
+                const input = row.querySelector(selector);
+                return input && input.value !== '' ? parseFloat(input.value) : null;
+            };
+
+            const values = {
+                harian: getVal('.input-harian'),
+                tugas: getVal('.input-tugas'),
+                quiz: getVal('.input-quiz'),
+                uts: getVal('.input-uts'),
+                uas: getVal('.input-uas'),
+                praktik: getVal('.input-praktik'),
             };
 
             const scoreAkhir = row.querySelector('.score-akhir');
             const badgePredikat = row.querySelector('.badge-predikat');
             const badgeRemedial = row.querySelector('.badge-remedial');
 
-            const calculateScore = () => {
-                const values = {
-                    harian: parseFloat(inputs.harian?.value) || 0,
-                    tugas: parseFloat(inputs.tugas?.value) || 0,
-                    quiz: parseFloat(inputs.quiz?.value) || 0,
-                    uts: parseFloat(inputs.uts?.value) || 0,
-                    uas: parseFloat(inputs.uas?.value) || 0,
-                    praktik: parseFloat(inputs.praktik?.value) || 0,
-                };
+            const hasInput = Object.values(values).some(val => val !== null);
 
-                const hasInput = Object.values(inputs).some((input) => input && input.value !== '');
+            if (!hasInput) {
+                scoreAkhir.textContent = '-';
+                badgePredikat.textContent = '-';
+                badgePredikat.className = 'badge bg-secondary badge-predikat';
+                badgeRemedial.textContent = '-';
+                badgeRemedial.className = 'badge bg-secondary badge-remedial';
+                return;
+            }
 
-                if (!hasInput) {
-                    scoreAkhir.textContent = '-';
-                    badgePredikat.textContent = '-';
-                    badgePredikat.className = 'badge bg-secondary badge-predikat';
-                    badgeRemedial.textContent = 'Tidak';
-                    badgeRemedial.className = 'badge bg-success badge-remedial';
-                    return;
-                }
+            const akhir = ((values.harian || 0) * 0.15) +
+                ((values.tugas || 0) * 0.15) +
+                ((values.quiz || 0) * 0.10) +
+                ((values.uts || 0) * 0.20) +
+                ((values.uas || 0) * 0.20) +
+                ((values.praktik || 0) * 0.20);
 
-                // Hitung Nilai Akhir sesuai Bobot
-                const akhir = (values.harian * 0.15) +
-                    (values.tugas * 0.15) +
-                    (values.quiz * 0.10) +
-                    (values.uts * 0.20) +
-                    (values.uas * 0.20) +
-                    (values.praktik * 0.20);
+            scoreAkhir.textContent = akhir.toFixed(2);
 
-                scoreAkhir.textContent = akhir.toFixed(2);
+            let predikat = 'D';
+            let badgeClass = 'bg-danger';
 
-                // Tentukan Predikat
-                let predikat = 'D';
-                let badgeClass = 'bg-danger';
+            if (akhir >= 90) {
+                predikat = 'A';
+                badgeClass = 'bg-success';
+            } else if (akhir >= 80) {
+                predikat = 'B';
+                badgeClass = 'bg-info text-dark';
+            } else if (akhir >= 75) {
+                predikat = 'C';
+                badgeClass = 'bg-warning text-dark';
+            }
 
-                if (akhir >= 90) {
-                    predikat = 'A';
-                    badgeClass = 'bg-success';
-                } else if (akhir >= 80) {
-                    predikat = 'B';
-                    badgeClass = 'bg-info text-dark';
-                } else if (akhir >= 75) {
-                    predikat = 'C';
-                    badgeClass = 'bg-warning text-dark';
-                }
+            badgePredikat.textContent = predikat;
+            badgePredikat.className = `badge ${badgeClass} badge-predikat`;
 
-                badgePredikat.textContent = predikat;
-                badgePredikat.className = `badge ${badgeClass} badge-predikat`;
+            if (akhir < 75) {
+                badgeRemedial.textContent = 'Remedial';
+                badgeRemedial.className = 'badge bg-danger badge-remedial';
+            } else {
+                badgeRemedial.textContent = 'Tuntas';
+                badgeRemedial.className = 'badge bg-success badge-remedial';
+            }
+        };
 
-                // Status Remedial (KKM < 75)
-                if (akhir < 75) {
-                    badgeRemedial.textContent = 'Ya';
-                    badgeRemedial.className = 'badge bg-danger badge-remedial';
-                } else {
-                    badgeRemedial.textContent = 'Tidak';
-                    badgeRemedial.className = 'badge bg-success badge-remedial';
-                }
-            };
-
-            Object.values(inputs).forEach((input) => {
-                if (input) {
-                    input.addEventListener('input', calculateScore);
-                }
-            });
+        // 3. Event Delegation for fast performance
+        formPenilaian.addEventListener('input', (e) => {
+            if (e.target.classList.contains('input-score')) {
+                const row = e.target.closest('.row-nilai');
+                if (row) calculateRowScore(row);
+            }
         });
     });
 </script>

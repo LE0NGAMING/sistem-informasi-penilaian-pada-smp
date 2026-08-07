@@ -1,3 +1,5 @@
+@use('App\Enums\RoleEnum')
+
 <!DOCTYPE html>
 <html lang="{{ str_replace('_', '-', app()->getLocale()) }}">
 
@@ -16,6 +18,9 @@
     <!-- Bootstrap 5 CSS & Icons -->
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/bootstrap-icons@1.11.3/font/bootstrap-icons.min.css">
+
+    <!-- SweetAlert2 CDN -->
+    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
@@ -150,9 +155,6 @@
     </style>
 
     @stack('styles')
-
-    <!-- SweetAlert2 CDN -->
-    <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 </head>
 
 <body>
@@ -170,14 +172,15 @@
                 <ul class="nav flex-column">
                     <li class="nav-item">
                         @php
-                        $dashboardRoute = match(auth()->user()?->role) {
-                        \App\Enums\RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
-                        \App\Enums\RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
-                        \App\Enums\RoleEnum::KEPALA_SEKOLAH => route('kepalasekolah.dashboard'),
-                        \App\Enums\RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
-                        \App\Enums\RoleEnum::GURU => route('guru.dashboard'),
-                        \App\Enums\RoleEnum::SISWA => route('siswa.dashboard'),
-                        \App\Enums\RoleEnum::ORANG_TUA => route('ortu.dashboard'),
+                        $userRole = auth()->user()?->role;
+                        $dashboardRoute = match($userRole) {
+                        RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
+                        RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
+                        RoleEnum::KEPALA_SEKOLAH => route('kepalasekolah.dashboard'),
+                        RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
+                        RoleEnum::GURU => route('guru.dashboard'),
+                        RoleEnum::SISWA => route('siswa.dashboard'),
+                        RoleEnum::ORANG_TUA => route('ortu.dashboard'),
                         default => route('login'),
                         };
                         @endphp
@@ -192,7 +195,7 @@
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
                     {{-- Menu Master Data (Tampil untuk Admin & Guru) --}}
-                    @if(in_array(auth()->user()?->role, [\App\Enums\RoleEnum::ADMIN_SEKOLAH, \App\Enums\RoleEnum::GURU]))
+                    @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::GURU], true))
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
                             <i class="bi bi-people-fill"></i>
@@ -214,7 +217,7 @@
                     @endif
 
                     {{-- Menu Khusus Admin Sekolah --}}
-                    @if(auth()->user()?->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                    @if($userRole === RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.rombel.*') ? 'active' : '' }}" href="{{ route('admin.rombel.index') }}">
                             <i class="bi bi-building"></i>
@@ -230,11 +233,17 @@
                     @endif
 
                     {{-- Menu Khusus Guru --}}
-                    @if(auth()->user()?->role === \App\Enums\RoleEnum::GURU)
+                    @if($userRole === RoleEnum::GURU)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('guru.nilai.*') ? 'active' : '' }}" href="{{ route('guru.nilai.index') }}">
                             <i class="bi bi-pencil-square"></i>
                             <span>Input Penilaian</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('guru.rekap.*') ? 'active' : '' }}" href="{{ route('guru.rekap.index') }}">
+                            <i class="bi bi-file-earmark-text-fill"></i>
+                            <span>Rekap Penilaian</span>
                         </a>
                     </li>
                     <li class="nav-item">
@@ -254,7 +263,7 @@
                 </ul>
 
                 {{-- Pengaturan Hanya Tampil Untuk Admin --}}
-                @if(in_array(auth()->user()?->role, [\App\Enums\RoleEnum::ADMIN_SEKOLAH, \App\Enums\RoleEnum::SUPER_ADMIN]))
+                @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::SUPER_ADMIN], true))
                 <div class="sidebar-heading">Pengaturan</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
@@ -273,7 +282,7 @@
             <!-- Topbar / Header -->
             <header class="topbar">
                 <div class="d-flex align-items-center gap-3">
-                    <button class="btn btn-light btn-sm border" id="sidebarToggle">
+                    <button class="btn btn-light btn-sm border" id="sidebarToggle" aria-label="Toggle Sidebar">
                         <i class="bi bi-list fs-5"></i>
                     </button>
                     <h5 class="mb-0 fw-semibold d-none d-sm-block">@yield('page-title', 'Dashboard')</h5>

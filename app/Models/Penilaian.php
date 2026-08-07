@@ -2,21 +2,22 @@
 
 namespace App\Models;
 
+use App\Enums\SemesterEnum;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use Illuminate\Database\Eloquent\Relations\BelongsTo;
 
 class Penilaian extends Model
 {
     use HasFactory;
 
-    // Sesuaikan nama tabel jika di database memakai nama lain (misal: 'nilais')
     protected $table = 'penilaian';
 
     protected $fillable = [
         'siswa_id',
         'mapel_id',
         'rombel_id',
-        'semester_id',
+        'semester',
         'nilai_harian',
         'tugas',
         'quiz',
@@ -30,41 +31,39 @@ class Penilaian extends Model
     ];
 
     /**
-     * Format tipe data kolom (Casting)
+     * Get the attributes that should be cast.
      */
-    protected $casts = [
-        'nilai_harian' => 'float',
-        'tugas'        => 'float',
-        'quiz'         => 'float',
-        'uts'          => 'float',
-        'uas'          => 'float',
-        'praktik'      => 'float',
-        'nilai_akhir'  => 'float',
-        'is_remedial'  => 'boolean',
-    ];
+    protected function casts(): array
+    {
+        return [
+            'semester'     => SemesterEnum::class,
+            'nilai_harian' => 'float',
+            'tugas'        => 'float',
+            'quiz'         => 'float',
+            'uts'          => 'float',
+            'uas'          => 'float',
+            'praktik'      => 'float',
+            'nilai_akhir'  => 'float',
+            'is_remedial'  => 'boolean',
+        ];
+    }
 
     // ==========================================
     // RELASI MODEL
     // ==========================================
 
-    public function siswa()
+    public function siswa(): BelongsTo
     {
-        return $this->belongsTo(Siswa::class, 'siswa_id');
+        return $this->belongsTo(Siswa::class);
     }
 
-    public function mapel()
+    public function mapel(): BelongsTo
     {
-        return $this->belongsTo(Mapel::class, 'mapel_id');
+        return $this->belongsTo(Mapel::class);
     }
 
-    public function rombel()
+    public function rombel(): BelongsTo
     {
-        // Ganti Rombel::class dengan Kelas::class jika kamu memakai model Kelas
-        return $this->belongsTo(Rombel::class, 'rombel_id');
-    }
-
-    public function semester()
-    {
-        return $this->belongsTo(Semester::class, 'semester_id');
+        return $this->belongsTo(Rombel::class);
     }
 }
