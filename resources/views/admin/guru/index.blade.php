@@ -2,10 +2,10 @@
 
 @section('content')
 <div class="container-fluid px-4 py-3">
+    {{-- Header --}}
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1">Daftar Data Guru</h3>
-            <!-- <p class="text-muted small mb-0">Kelola data tenaga pengajar dan profil pengajar.</p> -->
         </div>
         @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
         <a href="{{ route('admin.guru.create') }}" class="btn btn-primary px-3">
@@ -14,17 +14,18 @@
         @endif
     </div>
 
-    <!-- @if(session('success'))
+    <!-- {{-- Alert Notifikasi --}}
+    @session('success')
     <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <i class="bi bi-check-circle-fill me-2"></i>{{ $value }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    @endif -->
+    @endsession -->
 
+    {{-- Filter & Pencarian --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3">
             <form action="{{ route('admin.guru.index') }}" method="GET" class="row g-2 align-items-center">
-                {{-- Input Pencarian --}}
                 <div class="col-md-5 col-lg-4">
                     <div class="input-group">
                         <span class="input-group-text bg-white text-muted border-end-0">
@@ -36,22 +37,20 @@
                     </div>
                 </div>
 
-                {{-- Dropdown Mapel --}}
                 <div class="col-md-4 col-lg-3">
                     <select name="mapel_id" class="form-select">
                         <option value="">-- Semua Mata Pelajaran --</option>
                         @foreach($mapels as $mapel)
-                        <option value="{{ $mapel->id }}" {{ request('mapel_id') == $mapel->id ? 'selected' : '' }}>
+                        <option value="{{ $mapel->id }}" @selected(request('mapel_id')==$mapel->id)>
                             {{ $mapel->nama_mapel }}
                         </option>
                         @endforeach
                     </select>
                 </div>
 
-                {{-- Tombol Aksi --}}
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary px-3">Cari</button>
-                    @if(request('search') || request('mapel_id'))
+                    @if(request()->hasAny(['search', 'mapel_id']))
                     <a href="{{ route('admin.guru.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
                         Reset
                     </a>
@@ -61,6 +60,7 @@
         </div>
     </div>
 
+    {{-- Tabel Data --}}
     <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-0">
             <div class="table-responsive">
@@ -75,27 +75,23 @@
                             <th>Tanggal Lahir</th>
                             <th>Mata Pelajaran</th>
                             <th>No. WA/HP</th>
-                            <!-- <th>Email Akun</th> -->
-                            @if(auth()->user()->role === 'admin')
-                            <th class="text-end pe-4">Aksi</th>
+                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                            <th class="text-center pe-4">Aksi</th>
                             @endif
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse($gurus as $index => $guru)
-                        @php
-                        $jk = $guru->jenis_kelamin->value ?? $guru->jenis_kelamin;
-                        @endphp
+                        @forelse($gurus as $guru)
                         <tr>
-                            <td class="ps-4">{{ $gurus->firstItem() + $index }}</td>
+                            <td class="ps-4">{{ $gurus->firstItem() + $loop->index }}</td>
 
-                            {{-- Column Foto --}}
+                            {{-- Foto Profil --}}
                             <td>
                                 @if($guru->foto_path)
-                                <img src="{{ asset('storage/' . $guru->foto_path) }}" alt="{{ $guru->nama_lengkap }}" class="rounded-circle object-fit-cover" width="40" height="40">
+                                <img src="{{ Storage::url($guru->foto_path) }}" alt="{{ $guru->nama_lengkap }}" class="rounded-circle object-fit-cover" width="40" height="40">
                                 @else
                                 <div class="rounded-circle bg-light d-flex align-items-center justify-content-center text-secondary fw-bold border" style="width: 40px; height: 40px; font-size: 14px;">
-                                    {{ strtoupper(substr($guru->nama_lengkap, 0, 1)) }}
+                                    {{ str($guru->nama_lengkap)->substr(0, 1)->upper() }}
                                 </div>
                                 @endif
                             </td>
@@ -103,28 +99,30 @@
                             <td><span class="fw-semibold text-secondary">{{ $guru->nip ?? '-' }}</span></td>
                             <td class="fw-bold text-dark">{{ $guru->nama_lengkap }}</td>
                             <td>
-                                @if(in_array(strtoupper(trim($jk)), ['L', 'LAKI-LAKI']))
+                                @if(str($guru->jenis_kelamin?->value ?? $guru->jenis_kelamin)->upper()->startsWith(['L', 'LAKI']))
                                 <span class="badge bg-info-subtle text-info px-2 py-1">Laki-laki</span>
                                 @else
                                 <span class="badge bg-danger-subtle text-danger px-2 py-1">Perempuan</span>
                                 @endif
                             </td>
-                            <td>{{ $guru->tanggal_lahir ? $guru->tanggal_lahir->translatedFormat('d F Y') : '-' }}</td>
-                            <td>{{ $guru->mapel->nama_mapel ?? '-' }}</td>
+                            <td>{{ $guru->tanggal_lahir?->translatedFormat('d F Y') ?? '-' }}</td>
+                            <td>{{ $guru->mapel?->nama_mapel ?? '-' }}</td>
                             <td><span class="text-muted small">{{ $guru->no_hp ?? '-' }}</span></td>
-                            <!-- <td class="text-muted small">{{ $guru->user->email ?? '-' }}</td> -->
-                            @if(auth()->user()->role === 'admin')
-                            <td class="text-center">
-                                <a href="{{ route('guru.edit', $guru->id) }}" class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <form action="{{ route('guru.destroy', $guru->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+
+                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                            <td class="text-center pe-4">
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ route('admin.guru.edit', $guru) }}" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <form action="{{ route('admin.guru.destroy', $guru) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                             @endif
                         </tr>
@@ -142,7 +140,7 @@
         </div>
         @if($gurus->hasPages())
         <div class="card-footer bg-white border-0 py-3">
-            {{ $gurus->links() }}
+            {{ $gurus->withQueryString()->links() }}
         </div>
         @endif
     </div>

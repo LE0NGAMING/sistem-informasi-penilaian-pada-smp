@@ -1,5 +1,7 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
@@ -7,21 +9,61 @@ use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\BelongsTo;
 use Illuminate\Database\Eloquent\Relations\HasMany;
 
+/**
+ * @property int $id
+ * @property string $nama_rombel
+ * @property int|string $tingkat
+ * @property int $tahun_ajaran_id
+ * @property int|null $wali_kelas_id
+ * @property \Illuminate\Support\Carbon|null $created_at
+ * @property \Illuminate\Support\Carbon|null $updated_at
+ * 
+ * @property-read \App\Models\Kelas|null $kelas
+ * @property-read \App\Models\TahunAjaran|null $tahunAjaran
+ * @property-read \App\Models\Guru|null $waliKelas
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Siswa> $siswa
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Penilaian> $penilaian
+ * @property-read \Illuminate\Database\Eloquent\Collection<int, \App\Models\Rapor> $rapor
+ */
 class Rombel extends Model
 {
     use HasFactory;
 
+    /**
+     * Nama tabel yang terikat dengan model.
+     *
+     * @var string
+     */
     protected $table = 'rombel';
 
+    /**
+     * Atribut yang dapat diisi secara massal (Mass Assignment).
+     *
+     * @var array<int, string>
+     */
     protected $fillable = [
-        'nama_rombel',     // Contoh: 7-A, 8-B, 9-C
-        'tingkat',        // Mengacu ke tabel kelas (Tingkat 7, 8, 9)
-        'tahun_ajaran_id', // Mengacu ke tabel tahun_ajaran
-        'wali_kelas_id',   // Mengacu ke tabel guru
+        'nama_rombel',
+        'tingkat',
+        'tahun_ajaran_id',
+        'wali_kelas_id',
     ];
 
     /**
-     * Relasi ke Tingkat Kelas (Kelas 7, 8, 9).
+     * Penataan tipe data atribut (Casting) versi Laravel modern.
+     *
+     * @return array<string, string>
+     */
+    protected function casts(): array
+    {
+        return [
+            'id'              => 'integer',
+            'tahun_ajaran_id' => 'integer',
+            'wali_kelas_id'   => 'integer',
+        ];
+    }
+
+    /**
+     * Relasi ke Tingkat Kelas (misal: Tingkat 7, 8, 9).
      */
     public function kelas(): BelongsTo
     {
@@ -53,7 +95,7 @@ class Rombel extends Model
     }
 
     /**
-     * Relasi ke Penilaian di rombel ini.
+     * Relasi ke seluruh Penilaian di rombel ini.
      */
     public function penilaian(): HasMany
     {
@@ -61,7 +103,7 @@ class Rombel extends Model
     }
 
     /**
-     * Relasi ke Rapor siswa di rombel ini.
+     * Relasi ke seluruh Rapor siswa di rombel ini.
      */
     public function rapor(): HasMany
     {

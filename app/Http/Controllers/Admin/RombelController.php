@@ -1,92 +1,170 @@
 <?php
 
+declare(strict_types=1);
+
 namespace App\Http\Controllers\Admin;
 
 use App\Http\Controllers\Controller;
-use App\Models\Rombel;
-use App\Models\Kelas;
+use App\Http\Requests\PlotSiswaRequest;
 use App\Models\Guru;
+use App\Models\Kelas;
+use App\Models\Rombel;
+use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use Illuminate\Contracts\View\View;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
 
 class RombelController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Menampilkan daftar Rombongan Belajar dengan pencarian dan paginasi.
+     */
+    public function index(Request $request): View
     {
-        $query = Rombel::with(['kelas', 'waliKelas']);
+        $rombels = Rombel::query()
+            ->with(['kelas', 'waliKelas'])
+            ->when($request->filled('search'), function ($query) use ($request): void {
+                $search = $request->input('search');
+                $query->where(function ($q) use ($search): void {
+                    $q->where('nama_rombel', 'like', "%{$search}%")
+                        ->orWhereHas('waliKelas', fn($q) => $q->where('nama_lengkap', 'like', "%{$search}%"));
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_rombel', 'like', "%{$search}%")
-                    ->orWhereHas('waliKelas', function ($q) use ($search) {
-                        $q->where('nama_lengkap', 'like', "%{$search}%");
-                    });
-            });
-        }
-
-        $rombels = $query->latest()->paginate(10)->withQueryString();
-        return view('admin.rombel.index', compact('rombels'));
+        return view('admin.rombel.index', [
+            'rombels' => $rombels,
+        ]);
     }
 
-    public function create()
+    /**
+     * Menampilkan form tambah Rombongan Belajar.
+     */
+    public function create(): View
     {
-        $kelases = Kelas::orderBy('nama_kelas', 'asc')->get();
-        $gurus   = Guru::orderBy('nama_lengkap', 'asc')->get();
-        //$tahunAjarans = TahunAjaran::orderBy('id', 'desc')->get();
-        $tahunAjarans = TahunAjaran::all();
-        return view('admin.rombel.create', compact('kelases', 'gurus', 'tahunAjarans'));
+        return view('admin.rombel.create', [
+            'kelases'      => Kelas::orderBy('nama_kelas')->get(),
+            'gurus'        => Guru::orderBy('nama_lengkap')->get(),
+            'tahunAjarans' => TahunAjaran::latest()->get(),
+        ]);
     }
 
-    public function store(Request $request)
+    /**
+     * Menyimpan Rombongan Belajar baru ke database.
+     */
+    public function store(Request $request): RedirectResponse
     {
-        $tahunAjaranAktif = TahunAjaran::where('is_active', 1)->first();
+        $tahunAjaranAktif = TahunAjaran::where('is_active', true)->first();
 
         if ($tahunAjaranAktif) {
             $request->merge([
-                'tahun_ajaran_id' => $tahunAjaranAktif->id
+                'tahun_ajaran_id' => $tahunAjaranAktif->id,
             ]);
         }
 
         $validated = $request->validate([
-            'nama_rombel'   => 'required|string|max:50',
-            'tingkat'      => 'required|string',
-            'tahun_ajaran_id' => 'required|exists:tahun_ajaran,id',
-            'wali_kelas_id' => 'nullable|exists:guru,id',
+            'nama_rombel'     => ['required', 'string', 'max:50'],
+            'tingkat'         => ['required', 'string'],
+            'tahun_ajaran_id' => ['required', 'exists:tahun_ajaran,id'],
+            'wali_kelas_id'   => ['nullable', 'exists:guru,id'],
         ]);
 
         Rombel::create($validated);
 
-        return redirect()->route('admin.rombel.index')
+        return to_route('admin.rombel.index')
             ->with('success', 'Rombongan belajar berhasil ditambahkan.');
     }
 
-    public function edit(Rombel $rombel)
+    /**
+     * Menampilkan detail Rombongan Belajar beserta daftar siswa.
+     */
+    public function show(Rombel $rombel): View
     {
-        $kelases = Kelas::orderBy('tingkat', 'asc')->get();
-        $gurus   = Guru::orderBy('nama_lengkap', 'asc')->get();
-        return view('admin.rombel.edit', compact('rombel', 'kelases', 'gurus'));
+        // PERBAIKAN: Memuat relasi relasi secara bersih tanpa pemanggilan $rombel->load() bersarang
+        $rombel->load([
+            'waliKelas',
+            'tahunAjaran',
+            'siswa' => fn($query) => $query->orderBy('nama_lengkap'),
+        ]);
+
+        $siswaTersedia = Siswa::query()
+            ->whereNull('rombel_id')
+            ->orderBy('nama_lengkap')
+            ->get();
+
+        return view('admin.rombel.show', [
+            'rombel'        => $rombel,
+            'siswaList'     => $rombel->siswa,
+            'siswaTersedia' => $siswaTersedia,
+        ]);
     }
 
-    public function update(Request $request, Rombel $rombel)
+    /**
+     * Menampilkan form edit Rombongan Belajar.
+     */
+    public function edit(Rombel $rombel): View
+    {
+        return view('admin.rombel.edit', [
+            'rombel'  => $rombel,
+            'kelases' => Kelas::orderBy('tingkat')->get(),
+            'gurus'   => Guru::orderBy('nama_lengkap')->get(),
+        ]);
+    }
+
+    /**
+     * Memperbarui data Rombongan Belajar di database.
+     */
+    public function update(Request $request, Rombel $rombel): RedirectResponse
     {
         $validated = $request->validate([
-            'nama_rombel'   => 'required|string|max:50',
-            'tingkat'      => 'required|string',
-            'wali_kelas_id' => 'nullable|exists:guru,id',
+            'nama_rombel'   => ['required', 'string', 'max:50'],
+            'tingkat'       => ['required', 'string'],
+            'wali_kelas_id' => ['nullable', 'exists:guru,id'],
         ]);
 
         $rombel->update($validated);
 
-        return redirect()->route('admin.rombel.index')
+        return to_route('admin.rombel.index')
             ->with('success', 'Rombongan belajar berhasil diperbarui.');
     }
 
-    public function destroy(Rombel $rombel)
+    /**
+     * Menghapus Rombongan Belajar dari database.
+     */
+    public function destroy(Rombel $rombel): RedirectResponse
     {
         $rombel->delete();
 
-        return redirect()->route('admin.rombel.index')
+        return to_route('admin.rombel.index')
             ->with('success', 'Rombongan belajar berhasil dihapus.');
+    }
+
+    /**
+     * Mengaitkan banyak siswa ke dalam Rombongal Belajar (Plotting).
+     */
+    public function plotSiswa(PlotSiswaRequest $request, Rombel $rombel): RedirectResponse
+    {
+        DB::transaction(function () use ($request, $rombel) {
+            Siswa::whereIn('id', $request->validated('siswa_ids'))
+                ->update(['rombel_id' => $rombel->id]);
+        });
+
+        return to_route('admin.rombel.show', $rombel)
+            ->with('success', 'Siswa berhasil ditambahkan ke rombel ini!');
+    }
+
+    /**
+     * Mengeluarkan siswa dari Rombongan Belajar.
+     */
+    public function unplotSiswa(Rombel $rombel, Siswa $siswa): RedirectResponse
+    {
+        $siswa->update(['rombel_id' => null]);
+
+        return to_route('admin.rombel.show', $rombel)
+            ->with('success', 'Siswa berhasil dikeluarkan dari rombel.');
     }
 }

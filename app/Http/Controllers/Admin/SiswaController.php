@@ -2,66 +2,80 @@
 
 namespace App\Http\Controllers\Admin;
 
+use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Siswa;
 use App\Models\Kelas;
+use App\Models\Siswa;
 use App\Models\User;
+use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
 use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class SiswaController extends Controller
 {
-    public function index(Request $request)
+    /**
+     * Menampilkan daftar data siswa.
+     */
+    public function index(Request $request): View
     {
-        $query = Siswa::with(['kelas', 'user']);
+        $siswas = Siswa::with(['kelas', 'user'])
+            ->when($request->filled('search'), function ($query) use ($request) {
+                $search = $request->search;
+                $query->where(function ($q) use ($search) {
+                    $q->where('nama_lengkap', 'like', "%{$search}%")
+                        ->orWhere('nis', 'like', "%{$search}%")
+                        ->orWhere('nisn', 'like', "%{$search}%");
+                });
+            })
+            ->latest()
+            ->paginate(10)
+            ->withQueryString();
 
-        // Filter Pencarian NIS, NISN, atau Nama
-        if ($request->filled('search')) {
-            $search = $request->search;
-            $query->where(function ($q) use ($search) {
-                $q->where('nama_lengkap', 'like', "%{$search}%")
-                    ->orWhere('nis', 'like', "%{$search}%")
-                    ->orWhere('nisn', 'like', "%{$search}%");
-            });
-        }
-        $siswas = $query->latest()->paginate(10)->withQueryString();
         return view('admin.siswa.index', compact('siswas'));
     }
 
-    public function create()
+    /**
+     * Form tambah siswa baru.
+     */
+    public function create(): View
     {
-        $kelases = Kelas::all();
+        $kelases = Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
+
         return view('admin.siswa.create', compact('kelases'));
     }
 
-    public function store(Request $request)
+    /**
+     * Menyimpan data siswa baru ke database.
+     */
+    public function store(Request $request): RedirectResponse
     {
         $validated = $request->validate([
-            'nis'           => 'required|string|max:20|unique:siswa,nis',
-            'nisn'          => 'nullable|string|size:10|unique:siswa,nisn',
-            'nama_lengkap'  => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:L,P',
-            'kelas_id'      => 'required|exists:kelas,id',
-            'tempat_lahir'  => 'nullable|string|max:100',
-            'tanggal_lahir' => 'nullable|date',
-            'agama'         => 'nullable|string|max:20',
-            'alamat'        => 'nullable|string',
-            'email'         => 'required|email|max:255|unique:users,email',
-            'password'      => 'nullable|string|min:8', // Opsional, default jika kosong
+            'nis'           => ['required', 'string', 'max:20', 'unique:siswa,nis'],
+            'nisn'          => ['nullable', 'string', 'size:10', 'unique:siswa,nisn'],
+            'nama_lengkap'  => ['required', 'string', 'max:255'],
+            'jenis_kelamin' => ['required', 'in:L,P'],
+            'kelas_id'      => ['required', 'exists:kelas,id'],
+            'tempat_lahir'  => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date'],
+            'agama'         => ['nullable', 'string', 'max:20'],
+            'alamat'        => ['nullable', 'string'],
+            'email'         => ['required', 'email', 'max:255', 'unique:users,email'],
+            'password'      => ['nullable', 'string', 'min:8'],
         ]);
 
         DB::transaction(function () use ($validated) {
-            // 1. Buat User Akun Siswa
+            // 1. Buat Akun User Siswa
             $user = User::create([
                 'name'     => $validated['nama_lengkap'],
                 'email'    => $validated['email'],
-                'password' => Hash::make($validated['password'] ?? 'siswa123'), // Gunakan input password atau fallback default
-                'role'     => 'siswa',
+                'password' => Hash::make($validated['password'] ?? 'siswa123'),
+                'role'     => RoleEnum::SISWA->value ?? 'siswa',
             ]);
 
-            // 2. Buat Data Siswa
+            // 2. Buat Profile Siswa
             Siswa::create([
                 'user_id'       => $user->id,
                 'kelas_id'      => $validated['kelas_id'],
@@ -76,35 +90,53 @@ class SiswaController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.siswa.index')->with('success', 'Data siswa berhasil ditambahkan.');
+        return redirect()
+            ->route('admin.siswa.index')
+            ->with('success', 'Data siswa berhasil ditambahkan.');
     }
 
-    public function edit(Siswa $siswa)
+    /**
+     * Menampilkan detail spesifik siswa.
+     */
+    public function show(Siswa $siswa): View
     {
-        $kelases = Kelas::all();
+        $siswa->load('kelas', 'user');
+
+        return view('admin.siswa.show', compact('siswa'));
+    }
+
+    /**
+     * Form edit data siswa.
+     */
+    public function edit(Siswa $siswa): View
+    {
+        $kelases = Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
         $siswa->load('user', 'kelas');
 
         return view('admin.siswa.edit', compact('siswa', 'kelases'));
     }
 
-    public function update(Request $request, Siswa $siswa)
+    /**
+     * Memperbarui data siswa di database.
+     */
+    public function update(Request $request, Siswa $siswa): RedirectResponse
     {
         $validated = $request->validate([
             'nis'           => ['required', 'string', 'max:20', Rule::unique('siswa', 'nis')->ignore($siswa->id)],
             'nisn'          => ['nullable', 'string', 'size:10', Rule::unique('siswa', 'nisn')->ignore($siswa->id)],
-            'nama_lengkap'  => 'required|string|max:255',
-            'jenis_kelamin' => 'required|in:L,P',
-            'kelas_id'      => 'required|exists:kelas,id',
-            'tempat_lahir'  => 'nullable|string|max:100',
-            'tanggal_lahir' => 'nullable|date',
-            'agama'         => 'nullable|string|max:20',
-            'alamat'        => 'nullable|string',
+            'nama_lengkap'  => ['required', 'string', 'max:255'],
+            'jenis_kelamin' => ['required', 'in:L,P'],
+            'kelas_id'      => ['required', 'exists:kelas,id'],
+            'tempat_lahir'  => ['nullable', 'string', 'max:100'],
+            'tanggal_lahir' => ['nullable', 'date'],
+            'agama'         => ['nullable', 'string', 'max:20'],
+            'alamat'        => ['nullable', 'string'],
             'email'         => ['required', 'email', 'max:255', Rule::unique('users', 'email')->ignore($siswa->user_id)],
-            'password'      => 'nullable|string|min:8',
+            'password'      => ['nullable', 'string', 'min:8'],
         ]);
 
         DB::transaction(function () use ($validated, $siswa) {
-            // 1. Update User Akun
+            // 1. Update Akun User
             if ($siswa->user) {
                 $userData = [
                     'name'  => $validated['nama_lengkap'],
@@ -132,19 +164,28 @@ class SiswaController extends Controller
             ]);
         });
 
-        return redirect()->route('admin.siswa.index')->with('success', 'Data siswa berhasil diupdate.');
+        return redirect()
+            ->route('admin.siswa.index')
+            ->with('success', 'Data siswa berhasil diperbarui.');
     }
 
-    public function destroy(Siswa $siswa)
+    /**
+     * Menghapus data siswa dan akun user terkait.
+     */
+    public function destroy(Siswa $siswa): RedirectResponse
     {
         DB::transaction(function () use ($siswa) {
-            // Hapus akun user terkait terlebih dahulu
-            if ($siswa->user) {
-                $siswa->user()->delete();
-            }
+            $user = $siswa->user;
+
             $siswa->delete();
+
+            if ($user) {
+                $user->delete();
+            }
         });
 
-        return back()->with('success', 'Data siswa beserta akun berhasil dihapus.');
+        return redirect()
+            ->route('admin.siswa.index')
+            ->with('success', 'Data siswa beserta akun berhasil dihapus.');
     }
 }

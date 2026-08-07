@@ -9,26 +9,28 @@
     {{-- Filter Card --}}
     <div class="card border-0 shadow-sm rounded-4 mb-4">
         <div class="card-body p-4">
-            <h6 class="fw-bold mb-3 text-dark"><i class="bi bi-filter me-2 text-primary"></i>Filter Penilaian</h6>
+            <h6 class="fw-bold mb-3 text-dark">
+                <i class="bi bi-filter me-2 text-primary"></i>Filter Penilaian
+            </h6>
             <form action="{{ route('guru.nilai.index') }}" method="GET" class="row g-3 align-items-end">
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-secondary">Rombongan Belajar (Rombel)</label>
-                    <select name="rombel_id" class="form-select rounded-3" required>
+                    <label for="rombel_id" class="form-label small fw-semibold text-secondary">Rombongan Belajar (Rombel)</label>
+                    <select name="rombel_id" id="rombel_id" class="form-select rounded-3" required>
                         <option value="">-- Pilih Rombel --</option>
                         @foreach($rombelList as $rombel)
-                        <option value="{{ $rombel->id }}" {{ $rombelId == $rombel->id ? 'selected' : '' }}>
-                            {{ $rombel->nama_rombel ?? $rombel->nama_kelas ?? 'Rombel '.$rombel->id }}
+                        <option value="{{ $rombel->id }}" @selected($rombelId==$rombel->id)>
+                            {{ $rombel->nama_rombel }}
                         </option>
                         @endforeach
                     </select>
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-secondary">Mata Pelajaran</label>
-                    <select name="mapel_id" class="form-select rounded-3" required>
+                    <label for="mapel_id" class="form-label small fw-semibold text-secondary">Mata Pelajaran</label>
+                    <select name="mapel_id" id="mapel_id" class="form-select rounded-3" required>
                         <option value="">-- Pilih Mapel --</option>
                         @foreach($mapelList as $mapel)
-                        <option value="{{ $mapel->id }}" {{ $mapelId == $mapel->id ? 'selected' : '' }}>
+                        <option value="{{ $mapel->id }}" @selected($mapelId==$mapel->id)>
                             {{ $mapel->nama_mapel }}
                         </option>
                         @endforeach
@@ -36,12 +38,12 @@
                 </div>
 
                 <div class="col-md-3">
-                    <label class="form-label small fw-semibold text-secondary">Semester</label>
-                    <select name="semester_id" class="form-select rounded-3" required>
+                    <label for="semester_id" class="form-label small fw-semibold text-secondary">Semester</label>
+                    <select name="semester_id" id="semester_id" class="form-select rounded-3" required>
                         <option value="">-- Pilih Semester --</option>
-                        @foreach($semesterList as $sem)
-                        <option value="{{ $sem->id }}" {{ $semesterId == $sem->id ? 'selected' : '' }}>
-                            {{ $sem->nama_semester ?? $sem->semester ?? 'Semester '.$sem->id }}
+                        @foreach(\App\Enums\SemesterEnum::cases() as $semester)
+                        <option value="{{ $semester->value }}" @selected($semesterId==$semester->value)>
+                            {{ $semester->label() }}
                         </option>
                         @endforeach
                     </select>
@@ -70,9 +72,6 @@
                     <h6 class="fw-bold mb-0 text-dark">Daftar Penilaian Siswa</h6>
                     <small class="text-muted">Bobot: Harian (15%), Tugas (15%), Quiz (10%), UTS (20%), UAS (20%), Praktik (20%) | KKM: 75</small>
                 </div>
-                <button type="submit" class="btn btn-success px-4 rounded-3 fw-semibold">
-                    <i class="bi bi-check-lg me-1"></i> Simpan Penilaian
-                </button>
             </div>
 
             <div class="card-body p-0">
@@ -97,17 +96,7 @@
                         <tbody>
                             @forelse($siswaList as $index => $siswa)
                             @php
-                            $dataNilai = $siswa->penilaian->first();
-                            $harian = $dataNilai->nilai_harian ?? '';
-                            $tugas = $dataNilai->tugas ?? '';
-                            $quiz = $dataNilai->quiz ?? '';
-                            $uts = $dataNilai->uts ?? '';
-                            $uas = $dataNilai->uas ?? '';
-                            $praktik = $dataNilai->praktik ?? '';
-                            $akhir = $dataNilai->nilai_akhir ?? '-';
-                            $predikat = $dataNilai->predikat ?? '-';
-                            $isRemedial = $dataNilai->is_remedial ?? false;
-                            $catatan = $dataNilai->catatan ?? '';
+                            $nilai = $siswa->penilaian->first();
                             @endphp
                             <tr class="row-nilai" data-siswa-id="{{ $siswa->id }}">
                                 <td class="ps-4 fw-semibold text-secondary">{{ $index + 1 }}</td>
@@ -118,60 +107,67 @@
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][nilai_harian]"
-                                        value="{{ $harian }}"
+                                        value="{{ $nilai?->nilai_harian }}"
                                         class="form-control form-control-sm input-harian" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][tugas]"
-                                        value="{{ $tugas }}"
+                                        value="{{ $nilai?->tugas }}"
                                         class="form-control form-control-sm input-tugas" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][quiz]"
-                                        value="{{ $quiz }}"
+                                        value="{{ $nilai?->quiz }}"
                                         class="form-control form-control-sm input-quiz" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][uts]"
-                                        value="{{ $uts }}"
+                                        value="{{ $nilai?->uts }}"
                                         class="form-control form-control-sm input-uts" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][uas]"
-                                        value="{{ $uas }}"
+                                        value="{{ $nilai?->uas }}"
                                         class="form-control form-control-sm input-uas" placeholder="0">
                                 </td>
                                 <td>
                                     <input type="number" step="0.01" min="0" max="100"
                                         name="nilai[{{ $siswa->id }}][praktik]"
-                                        value="{{ $praktik }}"
+                                        value="{{ $nilai?->praktik }}"
                                         class="form-control form-control-sm input-praktik" placeholder="0">
                                 </td>
                                 <td>
-                                    <span class="fw-bold fs-6 text-primary score-akhir">{{ $akhir }}</span>
+                                    <span class="fw-bold fs-6 text-primary score-akhir">
+                                        {{ $nilai?->nilai_akhir ?? '-' }}
+                                    </span>
                                 </td>
                                 <td>
-                                    <span class="badge bg-secondary badge-predikat">{{ $predikat }}</span>
+                                    <span class="badge bg-secondary badge-predikat">
+                                        {{ $nilai?->predikat ?? '-' }}
+                                    </span>
                                 </td>
                                 <td>
-                                    <span class="badge badge-remedial {{ $isRemedial ? 'bg-danger' : 'bg-success' }}">
-                                        {{ $isRemedial ? 'Ya' : 'Tidak' }}
+                                    <span @class([ 'badge' , 'badge-remedial' , 'bg-danger'=> $nilai?->is_remedial,
+                                        'bg-success' => ! $nilai?->is_remedial,
+                                        ])>
+                                        {{ $nilai?->is_remedial ? 'Ya' : 'Tidak' }}
                                     </span>
                                 </td>
                                 <td class="pe-4">
                                     <input type="text"
                                         name="nilai[{{ $siswa->id }}][catatan]"
-                                        value="{{ $catatan }}"
+                                        value="{{ $nilai?->catatan }}"
                                         class="form-control form-control-sm" placeholder="Catatan...">
                                 </td>
                             </tr>
                             @empty
                             <tr>
                                 <td colspan="12" class="text-center py-4 text-muted">
+                                    <i class="bi bi-person-x fs-3 d-block mb-2"></i>
                                     Tidak ada data siswa ditemukan untuk rombel ini.
                                 </td>
                             </tr>
@@ -202,31 +198,34 @@
 
 @push('scripts')
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
+    document.addEventListener('DOMContentLoaded', () => {
         const rows = document.querySelectorAll('.row-nilai');
 
-        rows.forEach(row => {
-            const inputHarian = row.querySelector('.input-harian');
-            const inputTugas = row.querySelector('.input-tugas');
-            const inputQuiz = row.querySelector('.input-quiz');
-            const inputUts = row.querySelector('.input-uts');
-            const inputUas = row.querySelector('.input-uas');
-            const inputPraktik = row.querySelector('.input-praktik');
+        rows.forEach((row) => {
+            const inputs = {
+                harian: row.querySelector('.input-harian'),
+                tugas: row.querySelector('.input-tugas'),
+                quiz: row.querySelector('.input-quiz'),
+                uts: row.querySelector('.input-uts'),
+                uas: row.querySelector('.input-uas'),
+                praktik: row.querySelector('.input-praktik'),
+            };
 
             const scoreAkhir = row.querySelector('.score-akhir');
             const badgePredikat = row.querySelector('.badge-predikat');
             const badgeRemedial = row.querySelector('.badge-remedial');
 
-            function calculateScore() {
-                const harian = parseFloat(inputHarian.value) || 0;
-                const tugas = parseFloat(inputTugas.value) || 0;
-                const quiz = parseFloat(inputQuiz.value) || 0;
-                const uts = parseFloat(inputUts.value) || 0;
-                const uas = parseFloat(inputUas.value) || 0;
-                const praktik = parseFloat(inputPraktik.value) || 0;
+            const calculateScore = () => {
+                const values = {
+                    harian: parseFloat(inputs.harian?.value) || 0,
+                    tugas: parseFloat(inputs.tugas?.value) || 0,
+                    quiz: parseFloat(inputs.quiz?.value) || 0,
+                    uts: parseFloat(inputs.uts?.value) || 0,
+                    uas: parseFloat(inputs.uas?.value) || 0,
+                    praktik: parseFloat(inputs.praktik?.value) || 0,
+                };
 
-                const hasInput = inputHarian.value !== '' || inputTugas.value !== '' || inputQuiz.value !== '' ||
-                    inputUts.value !== '' || inputUas.value !== '' || inputPraktik.value !== '';
+                const hasInput = Object.values(inputs).some((input) => input && input.value !== '');
 
                 if (!hasInput) {
                     scoreAkhir.textContent = '-';
@@ -237,13 +236,17 @@
                     return;
                 }
 
-                // Hitung Nilai Akhir (Sesuai Bobot Controller)
-                const akhir = (harian * 0.15) + (tugas * 0.15) + (quiz * 0.10) +
-                    (uts * 0.20) + (uas * 0.20) + (praktik * 0.20);
+                // Hitung Nilai Akhir sesuai Bobot
+                const akhir = (values.harian * 0.15) +
+                    (values.tugas * 0.15) +
+                    (values.quiz * 0.10) +
+                    (values.uts * 0.20) +
+                    (values.uas * 0.20) +
+                    (values.praktik * 0.20);
 
                 scoreAkhir.textContent = akhir.toFixed(2);
 
-                // Predikat
+                // Tentukan Predikat
                 let predikat = 'D';
                 let badgeClass = 'bg-danger';
 
@@ -269,9 +272,9 @@
                     badgeRemedial.textContent = 'Tidak';
                     badgeRemedial.className = 'badge bg-success badge-remedial';
                 }
-            }
+            };
 
-            [inputHarian, inputTugas, inputQuiz, inputUts, inputUas, inputPraktik].forEach(input => {
+            Object.values(inputs).forEach((input) => {
                 if (input) {
                     input.addEventListener('input', calculateScore);
                 }

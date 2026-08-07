@@ -29,4 +29,8 @@ class Semester extends Model
     {
         return $this->belongsTo(TahunAjaran::class);
     }
+
+    protected $casts = [
+        'semester' => SemesterEnum::class,
+    ];
 }

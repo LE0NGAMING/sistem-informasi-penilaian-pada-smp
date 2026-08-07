@@ -2,112 +2,115 @@
 
 namespace App\Http\Controllers\Guru;
 
+use App\Enums\SemesterEnum;
 use App\Http\Controllers\Controller;
-use Illuminate\Http\Request;
+use App\Models\Mapel;
 use App\Models\Penilaian;
 use App\Models\Rombel;
-use App\Models\Mapel;
-use App\Models\Semester;
 use App\Models\Siswa;
+use Illuminate\Http\RedirectResponse;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Validation\Rule;
+use Illuminate\View\View;
 
 class PenilaianController extends Controller
 {
-    public function index(Request $request)
+    public function index(Request $request): View
     {
-        $rombelList   = Rombel::orderBy('nama_rombel', 'asc')->get();
-        $mapelList    = Mapel::orderBy('nama_mapel', 'asc')->get();
-        $semesterList = Semester::orderBy('id', 'desc')->get();
-
-        $rombelId   = $request->get('rombel_id');
-        $mapelId    = $request->get('mapel_id');
-        $semesterId = $request->get('semester_id');
+        $rombelId = $request->query('rombel_id');
+        $mapelId = $request->query('mapel_id');
+        $semesterId = $request->query('semester_id');
 
         $siswaList = collect();
 
         if ($rombelId && $mapelId && $semesterId) {
-            $siswaList = Siswa::where('rombel_id', $rombelId)
-                ->with(['penilaian' => function ($q) use ($mapelId, $semesterId) {
-                    $q->where('mapel_id', $mapelId)
+            $siswaList = Siswa::query()
+                ->where('rombel_id', $rombelId)
+                ->with(['penilaian' => function ($query) use ($mapelId, $semesterId) {
+                    $query->where('mapel_id', $mapelId)
                         ->where('semester_id', $semesterId);
                 }])
-                ->orderBy('nama_lengkap', 'asc')
+                ->orderBy('nama_lengkap')
                 ->get();
         }
 
-        return view('guru.nilai.index', compact(
-            'rombelList',
-            'mapelList',
-            'semesterList',
-            'siswaList',
-            'rombelId',
-            'mapelId',
-            'semesterId'
-        ));
+        return view('guru.nilai.index', [
+            'rombelList'   => Rombel::orderBy('nama_rombel')->get(),
+            'mapelList'    => Mapel::orderBy('nama_mapel')->get(),
+            'semesterList' => SemesterEnum::cases(),
+            'siswaList'    => $siswaList,
+            'rombelId'     => $rombelId,
+            'mapelId'      => $mapelId,
+            'semesterId'   => $semesterId,
+        ]);
     }
 
-    public function store(Request $request)
+    public function store(Request $request): RedirectResponse
     {
-        $request->validate([
-            'rombel_id'   => 'required',
-            'mapel_id'    => 'required',
-            'semester_id' => 'required',
-            'nilai'       => 'required|array',
+        $validated = $request->validate([
+            'rombel_id'            => ['required', 'exists:rombels,id'],
+            'mapel_id'             => ['required', 'exists:mapels,id'],
+            'semester_id'          => ['required', Rule::enum(SemesterEnum::class)],
+            'nilai'                => ['required', 'array'],
+            'nilai.*.nilai_harian' => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.tugas'        => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.quiz'         => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.uts'          => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.uas'          => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.praktik'      => ['nullable', 'numeric', 'min:0', 'max:100'],
+            'nilai.*.catatan'      => ['nullable', 'string', 'max:255'],
         ]);
 
-        foreach ($request->nilai as $siswaId => $scores) {
-            $harian  = floatval($scores['nilai_harian'] ?? 0);
-            $tugas   = floatval($scores['tugas'] ?? 0);
-            $quiz    = floatval($scores['quiz'] ?? 0);
-            $uts     = floatval($scores['uts'] ?? 0);
-            $uas     = floatval($scores['uas'] ?? 0);
-            $praktik = floatval($scores['praktik'] ?? 0);
-            $catatan = $scores['catatan'] ?? null;
+        DB::transaction(function () use ($validated) {
+            foreach ($validated['nilai'] as $siswaId => $scores) {
+                $harian  = (float) ($scores['nilai_harian'] ?? 0);
+                $tugas   = (float) ($scores['tugas'] ?? 0);
+                $quiz    = (float) ($scores['quiz'] ?? 0);
+                $uts     = (float) ($scores['uts'] ?? 0);
+                $uas     = (float) ($scores['uas'] ?? 0);
+                $praktik = (float) ($scores['praktik'] ?? 0);
 
-            // Perhitungan Nilai Akhir (Bobot: Harian 15%, Tugas 15%, Quiz 10%, UTS 20%, UAS 20%, Praktik 20%)
-            $nilaiAkhir = ($harian * 0.15) + ($tugas * 0.15) + ($quiz * 0.10) +
-                ($uts * 0.20) + ($uas * 0.20) + ($praktik * 0.20);
-            $nilaiAkhir = round($nilaiAkhir, 2);
+                // Perhitungan Nilai Akhir
+                $nilaiAkhir = round(
+                    ($harian * 0.15) + ($tugas * 0.15) + ($quiz * 0.10) +
+                        ($uts * 0.20) + ($uas * 0.20) + ($praktik * 0.20),
+                    2
+                );
 
-            // Penentuan Predikat (A, B, C, D)
-            if ($nilaiAkhir >= 90) {
-                $predikat = 'A';
-            } elseif ($nilaiAkhir >= 80) {
-                $predikat = 'B';
-            } elseif ($nilaiAkhir >= 75) {
-                $predikat = 'C';
-            } else {
-                $predikat = 'D';
+                // Penentuan Predikat dengan ekspresi Match (PHP 8+)
+                $predikat = match (true) {
+                    $nilaiAkhir >= 90 => 'A',
+                    $nilaiAkhir >= 80 => 'B',
+                    $nilaiAkhir >= 75 => 'C',
+                    default           => 'D',
+                };
+
+                Penilaian::updateOrCreate(
+                    [
+                        'siswa_id'    => $siswaId,
+                        'mapel_id'    => $validated['mapel_id'],
+                        'rombel_id'   => $validated['rombel_id'],
+                        'semester_id' => $validated['semester_id'],
+                    ],
+                    [
+                        'nilai_harian' => $harian,
+                        'tugas'        => $tugas,
+                        'quiz'         => $quiz,
+                        'uts'          => $uts,
+                        'uas'          => $uas,
+                        'praktik'      => $praktik,
+                        'nilai_akhir'  => $nilaiAkhir,
+                        'predikat'     => $predikat,
+                        'is_remedial'  => $nilaiAkhir < 75,
+                        'catatan'      => $scores['catatan'] ?? null,
+                    ]
+                );
             }
+        });
 
-            // Penentuan Status Remedial (Standar KKM = 75)
-            $isRemedial = $nilaiAkhir < 75;
-
-            Penilaian::updateOrCreate(
-                [
-                    'siswa_id'    => $siswaId,
-                    'mapel_id'    => $request->mapel_id,
-                    'rombel_id'   => $request->rombel_id,
-                    'semester_id' => $request->semester_id,
-                ],
-                [
-                    'nilai_harian' => $harian,
-                    'tugas'        => $tugas,
-                    'quiz'         => $quiz,
-                    'uts'          => $uts,
-                    'uas'          => $uas,
-                    'praktik'      => $praktik,
-                    'nilai_akhir'  => $nilaiAkhir,
-                    'predikat'     => $predikat,
-                    'is_remedial'  => $isRemedial,
-                    'catatan'      => $catatan,
-                ]
-            );
-        }
-
-        return redirect()->route('guru.nilai.index', [
-            'rombel_id'   => $request->rombel_id,
-            'mapel_id'    => $request->mapel_id,
-            'semester_id' => $request->semester_id,
-        ])->with('success', 'Data penilaian berhasil disimpan!');
+        return redirect()
+            ->route('guru.nilai.index', $request->only(['rombel_id', 'mapel_id', 'semester_id']))
+            ->with('success', 'Data penilaian berhasil disimpan!');
     }
 }

@@ -6,7 +6,6 @@
     <div class="d-flex justify-content-between align-items-center mb-4">
         <div>
             <h3 class="fw-bold mb-1">Daftar Data Siswa</h3>
-            <!-- <p class="text-muted small mb-0">Kelola seluruh data siswa beserta akun akses sistem.</p> -->
         </div>
         @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
         <a href="{{ route('admin.siswa.create') }}" class="btn btn-primary px-3">
@@ -15,21 +14,22 @@
         @endif
     </div>
 
-    {{-- Alert Notification --}}
-    @if (session('success'))
+    <!-- {{-- Alert Notifikasi --}}
+    @session('success')
     <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ session('success') }}
+        <i class="bi bi-check-circle-fill me-2"></i>{{ $value }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    @endif
+    @endsession -->
 
-    @if (session('error'))
+    @session('error')
     <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ session('error') }}
+        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $value }}
         <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
-    @endif
+    @endsession
 
+    {{-- Filter & Pencarian --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3">
             <form action="{{ route('admin.siswa.index') }}" method="GET" class="row g-2 align-items-center">
@@ -45,7 +45,7 @@
                 </div>
                 <div class="col-auto">
                     <button type="submit" class="btn btn-primary px-3">Cari</button>
-                    @if(request('search'))
+                    @if(request()->filled('search'))
                     <a href="{{ route('admin.siswa.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
                         Reset
                     </a>
@@ -55,11 +55,9 @@
         </div>
     </div>
 
-    {{-- Main Content Card --}}
+    {{-- Table Data --}}
     <div class="card border-0 shadow-sm rounded-3">
         <div class="card-body p-4">
-
-            {{-- Table --}}
             <div class="table-responsive">
                 <table class="table table-hover align-middle mb-0">
                     <thead class="table-light">
@@ -69,30 +67,30 @@
                             <th scope="col">Nama Lengkap</th>
                             <th scope="col" width="12%">Gender</th>
                             <th scope="col" width="22%">Email (Akun)</th>
-                            @if(auth()->user()->role === 'admin')
+                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                             <th scope="col" width="12%" class="text-center">Aksi</th>
                             @endif
                         </tr>
                     </thead>
                     <tbody>
-                        @forelse ($siswas as $index => $siswa)
+                        @forelse ($siswas as $siswa)
                         <tr>
                             <td class="text-center fw-semibold text-muted">
-                                {{ $siswas->firstItem() + $index }}
+                                {{ $siswas->firstItem() + $loop->index }}
                             </td>
                             <td>
-                                <div class="fw-bold text-dark">{{ $siswa->nis }}</div>
+                                <div class="fw-bold text-dark">{{ $siswa->nis ?? '-' }}</div>
                                 <small class="text-muted">NISN: {{ $siswa->nisn ?? '-' }}</small>
                             </td>
                             <td>
                                 <div class="fw-semibold text-dark">{{ $siswa->nama_lengkap }}</div>
                                 <small class="text-muted">
                                     {{ $siswa->tempat_lahir ? $siswa->tempat_lahir . ', ' : '' }}
-                                    {{ $siswa->tanggal_lahir ? \Carbon\Carbon::parse($siswa->tanggal_lahir)->format('d-m-Y') : '-' }}
+                                    {{ $siswa->tanggal_lahir?->translatedFormat('d F Y') ?? '-' }}
                                 </small>
                             </td>
                             <td>
-                                @if(($siswa->jenis_kelamin->value ?? $siswa->jenis_kelamin) == 'L')
+                                @if(str($siswa->jenis_kelamin?->value ?? $siswa->jenis_kelamin)->upper()->startsWith(['L', 'LAKI']))
                                 <span class="badge bg-info-subtle text-info fw-semibold px-2 py-1">Laki-laki</span>
                                 @else
                                 <span class="badge bg-danger-subtle text-danger fw-semibold px-2 py-1">Perempuan</span>
@@ -101,30 +99,32 @@
                             <td>
                                 <div class="d-flex align-items-center">
                                     <i class="bi bi-envelope text-muted me-2"></i>
-                                    <span>{{ $siswa->user->email ?? '-' }}</span>
+                                    <span>{{ $siswa->user?->email ?? '-' }}</span>
                                 </div>
                             </td>
-                            @if(auth()->user()->role === 'admin')
+                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                             <td class="text-center">
-                                <a href="{{ route('siswa.edit', $siswa->id) }}" class="btn btn-sm btn-outline-warning">
-                                    <i class="bi bi-pencil-square"></i>
-                                </a>
-                                <form action="{{ route('siswa.destroy', $siswa->id) }}" method="POST" class="d-inline">
-                                    @csrf
-                                    @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-outline-danger" onclick="return confirm('Hapus data?')">
-                                        <i class="bi bi-trash"></i>
-                                    </button>
-                                </form>
+                                <div class="d-flex justify-content-center gap-1">
+                                    <a href="{{ route('admin.siswa.edit', $siswa) }}" class="btn btn-sm btn-outline-warning">
+                                        <i class="bi bi-pencil-square"></i>
+                                    </a>
+                                    <form action="{{ route('admin.siswa.destroy', $siswa) }}" method="POST" onsubmit="return confirm('Hapus data siswa ini?')">
+                                        @csrf
+                                        @method('DELETE')
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
+                                            <i class="bi bi-trash"></i>
+                                        </button>
+                                    </form>
+                                </div>
                             </td>
                             @endif
                         </tr>
                         @empty
                         <tr>
-                            <td colspan="6" class="text-center py-5">
+                            <td colspan="{{ auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH ? 6 : 5 }}" class="text-center py-5">
                                 <i class="bi bi-people text-muted fs-1 d-block mb-2"></i>
                                 <h6 class="fw-bold text-secondary mb-1">Belum Ada Data Siswa</h6>
-                                <p class="text-muted small mb-0">Klik tombol "Tambah Siswa" di atas untuk menambahkan data baru.</p>
+                                <p class="text-muted small mb-0">Klik tombol "Tambah Data" di atas untuk menambahkan data baru.</p>
                             </td>
                         </tr>
                         @endforelse
@@ -139,11 +139,10 @@
                     Menampilkan {{ $siswas->firstItem() }} - {{ $siswas->lastItem() }} dari {{ $siswas->total() }} data
                 </span>
                 <div>
-                    {{ $siswas->links() }}
+                    {{ $siswas->withQueryString()->links() }}
                 </div>
             </div>
             @endif
-
         </div>
     </div>
 </div>
