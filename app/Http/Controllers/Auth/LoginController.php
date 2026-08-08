@@ -4,12 +4,12 @@ namespace App\Http\Controllers\Auth;
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
-use App\Http\Requests\Auth\LoginRequest;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Validation\ValidationException;
 use Illuminate\View\View;
+
+/** @var \App\Models\User|null $user */
 
 class LoginController extends Controller
 {
@@ -24,27 +24,35 @@ class LoginController extends Controller
     /**
      * Memproses otentikasi login pengguna.
      */
-    public function authenticate(LoginRequest $request): RedirectResponse
+    public function authenticate(Request $request): RedirectResponse
     {
-        $credentials = [
-            'email' => $request->email,
-            'password' => $request->password,
-            'is_active' => true, // Memastikan akun aktif
-        ];
+        $credentials = $request->validate([
+            'email' => ['required', 'email'],
+            'password' => ['required'],
+        ]);
 
-        if (! Auth::attempt($credentials, $request->boolean('remember'))) {
-            throw ValidationException::withMessages([
-                'email' => __('Kredensial tidak cocok atau akun Anda sedang tidak aktif.'),
-            ]);
+        if (Auth::attempt($credentials)) {
+            $request->session()->regenerate();
+
+            /** @var \App\Models\User $user */
+            $user = Auth::user();
+
+            // ==========================================
+            // CATAT LOG AKTIVITAS LOGIN DI SINI
+            // ==========================================
+            activity()
+                ->causedBy($user)
+                ->log('Melakukan login ke dalam sistem.');
+
+            // Redirect ke dashboard spesifik sesuai role user
+            // Menggunakan intended agar bisa kembali ke halaman sebelumnya (jika ada),
+            // atau fallback ke dashboard sesuai role jika langsung login.
+            return redirect()->intended($this->getRedirectUrlByRole($user->role));
         }
 
-        $request->session()->regenerate();
-
-        /** @var \App\Models\User $user */
-        $user = Auth::user();
-
-        // Redirect sesuai RoleEnum
-        return redirect()->to($this->getRedirectUrlByRole($user->role));
+        return back()->withErrors([
+            'email' => 'Kredensial yang diberikan tidak cocok dengan data kami.',
+        ])->onlyInput('email');
     }
 
     /**
@@ -52,12 +60,23 @@ class LoginController extends Controller
      */
     public function logout(Request $request): RedirectResponse
     {
-        Auth::logout();
+        // Ambil data user sebelum sesi dihancurkan
+        $user = Auth::user();
 
+        // ==========================================
+        // CATAT LOG AKTIVITAS LOGOUT DI SINI
+        // ==========================================
+        if ($user) {
+            activity()
+                ->causedBy($user)
+                ->log('Melakukan logout dari sistem.');
+        }
+
+        Auth::logout();
         $request->session()->invalidate();
         $request->session()->regenerateToken();
 
-        return redirect()->route('login')->with('success', 'Anda telah berhasil keluar.');
+        return redirect('/login');
     }
 
     /**
@@ -71,7 +90,7 @@ class LoginController extends Controller
         return match ($roleEnum) {
             RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
             RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
-            RoleEnum::KEPALA_SEKOLAH => route('kepsek.dashboard'),
+            RoleEnum::KEPALA_SEKOLAH => route('kepalasekolah.dashboard'), // Diperbaiki: sesuaikan dengan web.php
             RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
             RoleEnum::GURU => route('guru.dashboard'),
             RoleEnum::SISWA => route('siswa.dashboard'),

@@ -73,23 +73,17 @@
                     <small class="text-muted">Bobot: Harian (15%), Tugas (15%), Quiz (10%), UTS (20%), UAS (20%), Praktik (20%) | KKM: 75</small>
                 </div>
 
-                {{-- Group Aksi / Shortcut Tombol Header --}}
                 <div class="d-flex align-items-center gap-2 flex-wrap">
                     <a href="{{ route('guru.rekap.index', ['rombel_id' => $rombelId, 'mapel_id' => $mapelId, 'semester_id' => $semesterId]) }}"
                         class="btn btn-outline-primary btn-sm rounded-3 fw-semibold btn-rekap-guard">
                         <i class="bi bi-file-earmark-text me-1"></i> Lihat Rekap Rombel
-                    </a>
-                    <a href="{{ route('guru.rapor.rombel', ['rombel' => $rombelId, 'semester_id' => $semesterId]) }}"
-                        target="_blank"
-                        class="btn btn-outline-danger btn-sm rounded-3 fw-semibold">
-                        <i class="bi bi-file-earmark-pdf me-1"></i> Cetak Rapor Rombel
                     </a>
                 </div>
             </div>
 
             <div class="card-body p-0">
                 <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="min-width: 1250px;">
+                    <table class="table table-hover align-middle mb-0" style="min-width: 1150px;">
                         <thead class="table-light">
                             <tr>
                                 <th class="ps-4" style="width: 50px;">No</th>
@@ -103,8 +97,7 @@
                                 <th style="width: 80px;">Akhir</th>
                                 <th style="width: 80px;">Predikat</th>
                                 <th style="width: 90px;" class="text-center">Status</th>
-                                <th style="width: 160px;">Catatan</th>
-                                <th class="pe-4 text-center" style="width: 70px;">Cetak</th>
+                                <th class="pe-4" style="width: 160px;">Catatan</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -178,24 +171,16 @@
                                         {{ $hasNilai ? ($nilai->is_remedial ? 'Remedial' : 'Tuntas') : '-' }}
                                     </span>
                                 </td>
-                                <td>
+                                <td class="pe-4">
                                     <input type="text"
                                         name="nilai[{{ $siswa->id }}][catatan]"
                                         value="{{ old("nilai.{$siswa->id}.catatan", $nilai?->catatan) }}"
                                         class="form-control form-control-sm" placeholder="Catatan...">
                                 </td>
-                                <td class="pe-4 text-center">
-                                    <a href="{{ route('guru.rapor.siswa', ['siswa' => $siswa->id, 'semester_id' => $semesterId]) }}"
-                                        target="_blank"
-                                        class="btn btn-sm btn-outline-danger rounded-3 px-2 py-1"
-                                        title="Cetak Rapor PDF Siswa Ini">
-                                        <i class="bi bi-file-earmark-pdf"></i>
-                                    </a>
-                                </td>
                             </tr>
                             @empty
                             <tr>
-                                <td colspan="13" class="text-center py-4 text-muted">
+                                <td colspan="12" class="text-center py-4 text-muted">
                                     <i class="bi bi-person-x fs-3 d-block mb-2"></i>
                                     Tidak ada data siswa ditemukan untuk rombel ini.
                                 </td>

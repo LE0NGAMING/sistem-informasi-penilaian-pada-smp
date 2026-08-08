@@ -3,79 +3,82 @@
 
 <head>
     <meta charset="UTF-8">
-    <title>Rapor - {{ $siswa->nama_lengkap ?? 'Siswa' }}</title>
+    <title>Cetak Rapor Siswa</title>
     <style>
         body {
-            font-family: sans-serif;
-            font-size: 11pt;
-            line-height: 1.4;
+            font-family: 'Helvetica, Arial, sans-serif';
             color: #333;
+            font-size: 12px;
+            line-height: 1.4;
+            margin: 0;
+            padding: 0;
+        }
+
+        .page-break {
+            page-break-after: always;
         }
 
         .header {
             text-align: center;
             margin-bottom: 20px;
-            border-bottom: 2px solid #000;
+            border-bottom: 2px solid #333;
             padding-bottom: 10px;
         }
 
         .header h2 {
-            margin: 0;
+            margin: 0 0 5px 0;
             text-transform: uppercase;
         }
 
         .header p {
-            margin: 2px 0;
-            font-size: 9pt;
+            margin: 0;
+            color: #666;
+            font-size: 11px;
         }
 
-        .table-info {
+        .student-info {
             width: 100%;
             margin-bottom: 15px;
             border-collapse: collapse;
         }
 
-        .table-info td {
-            padding: 3px 5px;
-            vertical-align: top;
+        .student-info td {
+            padding: 4px 0;
         }
 
-        .table-data {
+        .table-nilai {
             width: 100%;
             border-collapse: collapse;
-            margin-top: 10px;
+            margin-bottom: 20px;
         }
 
-        .table-data th,
-        .table-data td {
-            border: 1px solid #000;
+        .table-nilai th,
+        .table-nilai td {
+            border: 1px solid #999;
             padding: 6px 8px;
-            text-align: left;
+            text-align: center;
         }
 
-        .table-data th {
+        .table-nilai th {
             background-color: #f2f2f2;
-            text-align: center;
-            font-size: 10pt;
+            font-size: 11px;
         }
 
-        .text-center {
-            text-align: center;
+        .text-left {
+            text-align: left !important;
         }
 
-        .footer-ttd {
-            margin-top: 30px;
+        .footer-sign {
             width: 100%;
-            border-collapse: collapse;
+            margin-top: 40px;
         }
 
-        .footer-ttd td {
+        .footer-sign td {
             text-align: center;
-            vertical-align: top;
             width: 50%;
         }
 
-        .space-ttd {
+        .sign-space {
             height: 60px;
         }
     </style>
@@ -83,81 +86,96 @@
 
 <body>
 
+    @foreach($siswaList as $index => $siswa)
     <div class="header">
-        <h2>LAPORAN HASIL BELAJAR SISWA</h2>
-        <p>SEKOLAH MENENGAH PERTAMA / KEJURUAN</p>
+        <h2>Laporan Hasil Belajar Siswa (Rapor)</h2>
+        <p>Tahun Ajaran Aktif | Semester: {{ ucfirst($semester ?? 'Lengkap') }}</p>
     </div>
 
-    <table class="table-info">
+    {{-- Informasi Siswa --}}
+    <table class="student-info">
         <tr>
-            <td width="15%"><strong>Nama Siswa</strong></td>
-            <td width="2%">:</td>
-            <td width="40%">{{ $siswa->nama_lengkap ?? '-' }}</td>
-            <td width="15%"><strong>Kelas/Rombel</strong></td>
-            <td width="2%">:</td>
-            <td width="26%">{{ $siswa->rombel->nama_rombel ?? '-' }}</td>
+            <td style="width: 15%;"><strong>Nama Siswa</strong></td>
+            <td style="width: 35%;">: {{ $siswa->nama_lengkap }}</td>
+            <td style="width: 15%;"><strong>Kelas</strong></td>
+            <td style="width: 35%;">: {{ $siswa->rombel->nama_rombel ?? '-' }}</td>
         </tr>
         <tr>
             <td><strong>NISN</strong></td>
-            <td>:</td>
-            <td>{{ $siswa->nisn ?? '-' }}</td>
-            <td><strong>Semester</strong></td>
-            <td>:</td>
-            <td>{{ $semester ?? '-' }}</td>
+            <td>: {{ $siswa->nisn ?? '-' }}</td>
+            <td><strong>Wali Kelas</strong></td>
+            <td>: {{ $siswa->rombel->waliKelas->nama_lengkap ?? '-' }}</td>
         </tr>
     </table>
 
-    <table class="table-data">
+    {{-- Tabel Nilai Mengikuti Kolom Database Anda --}}
+    <table class="table-nilai">
         <thead>
             <tr>
-                <th width="5%">No</th>
-                <th>Mata Pelajaran</th>
-                <th width="12%">Nilai Akhir</th>
-                <th width="12%">Predikat</th>
-                <th width="15%">Status</th>
-                <th width="25%">Catatan</th>
+                <th rowspan="2" style="width: 5%;">No</th>
+                <th rowspan="2" class="text-left" style="width: 25%;">Mata Pelajaran</th>
+                <th colspan="6">Komponen Penilaian</th>
+                <th rowspan="2" style="width: 8%;">Akhir</th>
+                <th rowspan="2" style="width: 6%;">Predikat</th>
+                <th rowspan="2" style="width: 15%;">Catatan Guru</th>
+            </tr>
+            <tr>
+                <th>Harian</th>
+                <th>Tugas</th>
+                <th>Quiz</th>
+                <th>UTS</th>
+                <th>UAS</th>
+                <th>Praktik</th>
             </tr>
         </thead>
         <tbody>
-            @forelse($penilaianList as $penilaian)
+            @forelse($siswa->penilaian as $nilai)
             <tr>
-                <td class="text-center">{{ $loop->iteration }}</td>
-                <td>{{ $penilaian->mapel->nama_mapel ?? '-' }}</td>
-                <td class="text-center">
-                    {{ $penilaian->nilai_akhir !== null ? number_format($penilaian->nilai_akhir, 2) : '-' }}
-                </td>
-                <td class="text-center"><strong>{{ $penilaian->predikat ?? '-' }}</strong></td>
-                <td class="text-center">
-                    @if(!is_null($penilaian->is_remedial))
-                    {{ $penilaian->is_remedial ? 'Remedial' : 'Tuntas' }}
-                    @else
-                    -
-                    @endif
-                </td>
-                <td>{{ $penilaian->catatan ?? '-' }}</td>
+                <td>{{ $loop->iteration }}</td>
+                <td class="text-left">{{ $nilai->mapel->nama_mapel ?? 'Mapel Dihapus' }}</td>
+                <td>{{ $nilai->nilai_harian }}</td>
+                <td>{{ $nilai->tugas }}</td>
+                <td>{{ $nilai->quiz }}</td>
+                <td>{{ $nilai->uts }}</td>
+                <td>{{ $nilai->uas }}</td>
+                <td>{{ $nilai->praktik }}</td>
+                <td><strong>{{ $nilai->nilai_akhir }}</strong></td>
+                <td><strong>{{ $nilai->predikat }}</strong></td>
+                <td class="text-left" style="font-size: 10px;">{{ $nilai->catatan ?? '-' }}</td>
             </tr>
             @empty
             <tr>
-                <td colspan="6" class="text-center">Belum ada data penilaian untuk semester ini.</td>
+                <td colspan="11" style="text-align: center; padding: 15px; color: #666;">
+                    Belum ada data penilaian untuk semester ini.
+                </td>
             </tr>
             @endforelse
         </tbody>
     </table>
 
-    <table class="footer-ttd">
+    {{-- Tanda Tangan --}}
+    <table class="footer-sign">
         <tr>
             <td>
-                <p>Mengetahui,<br>Orang Tua/Wali Siswa</p>
-                <div class="space-ttd"></div>
-                <p>______________________</p>
+                <p>Mengetahui,</p>
+                <p>Orang Tua / Wali Murid</p>
+                <div class="sign-space"></div>
+                <p><b>( .................................... )</b></p>
             </td>
             <td>
-                <p>Jakarta, {{ $tanggalCetak ?? now()->format('d-m-Y') }}<br>Wali Kelas</p>
-                <div class="space-ttd"></div>
-                <p><strong>{{ $siswa->rombel->waliKelas->name ?? '........................' }}</strong></p>
+                <p>{{ $tanggalCetak }}</p>
+                <p>Wali Kelas</p>
+                <div class="sign-space"></div>
+                <p><b>{{ $siswa->rombel->waliKelas->nama_lengkap ?? '____________________' }}</b></p>
             </td>
         </tr>
     </table>
+
+    {{-- Page Break jika data lebih dari 1 siswa (untuk cetak massal rombel) --}}
+    @if(!$loop->last)
+    <div class="page-break"></div>
+    @endif
+    @endforeach
 
 </body>
 

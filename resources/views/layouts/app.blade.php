@@ -252,14 +252,13 @@
                             <span>Presensi Siswa</span>
                         </a>
                     </li>
-                    @endif
-
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('rapor.*') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('guru.rapor.*') ? 'active' : '' }}" href="{{ route('guru.rapor.index') }}">
                             <i class="bi bi-file-earmark-text-fill"></i>
                             <span>Cetak Rapor</span>
                         </a>
                     </li>
+                    @endif
                 </ul>
 
                 {{-- Pengaturan Hanya Tampil Untuk Admin --}}
@@ -270,6 +269,15 @@
                         <a class="nav-link" href="#">
                             <i class="bi bi-gear-fill"></i>
                             <span>Pengaturan Sistem</span>
+                        </a>
+                    </li>
+                </ul>
+                <div class="sidebar-heading">Sistem</div>
+                <ul class="nav flex-column">
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.logs.*') ? 'active' : '' }}" href="{{ route('admin.logs.index') }}">
+                            <i class="bi bi-clock-history"></i>
+                            <span>Log Aktivitas</span>
                         </a>
                     </li>
                 </ul>
