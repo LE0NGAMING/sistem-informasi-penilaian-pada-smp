@@ -218,10 +218,19 @@
 
         let isFormDirty = false;
 
-        // 1. Unsaved Changes Guard
+        // 1. Unsaved Changes Guards
         formPenilaian.addEventListener('input', () => isFormDirty = true);
         formPenilaian.addEventListener('submit', () => isFormDirty = false);
 
+        // Peringatan jika merefresh atau menutup tab saat ada perubahan belum disimpan
+        window.addEventListener('beforeunload', (e) => {
+            if (isFormDirty) {
+                e.preventDefault();
+                e.returnValue = '';
+            }
+        });
+
+        // Peringatan khusus saat mengklik tombol navigasi internal (misal Rekap)
         document.querySelectorAll('.btn-rekap-guard').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 if (isFormDirty) {
@@ -235,7 +244,13 @@
         const calculateRowScore = (row) => {
             const getVal = (selector) => {
                 const input = row.querySelector(selector);
-                return input && input.value !== '' ? parseFloat(input.value) : null;
+                if (!input || input.value === '') return null;
+
+                let val = parseFloat(input.value);
+                // Clamp value between 0 and 100 instantly for live calculation safety
+                if (val > 100) val = 100;
+                if (val < 0) val = 0;
+                return val;
             };
 
             const values = {

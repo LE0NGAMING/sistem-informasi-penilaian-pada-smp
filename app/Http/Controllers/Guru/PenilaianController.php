@@ -8,6 +8,7 @@ use App\Models\Penilaian;
 use App\Models\Siswa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Validation\Rule;
 use Illuminate\View\View;
@@ -17,12 +18,11 @@ class PenilaianController extends Controller
     /**
      * Menampilkan lembar input dan daftar penilaian siswa berdasarkan hak ampu guru.
      */
-    public function index(Request $request): View
+    public function index(Request $request): View|RedirectResponse
     {
-        $guru = auth()->user()->guru;
+        $guru = Auth::user()->guru;
 
         // Ambil daftar penugasan (pengampu) milik guru yang sedang login
-        // Di-load beserta relasi rombel dan mapel-nya
         $pengampus = $guru->pengampus()->with(['rombel', 'mapel'])->get();
 
         // Ekstraksi pilihan Rombel dan Mapel yang HANYA diajar oleh guru ini untuk dropdown
@@ -87,7 +87,7 @@ class PenilaianController extends Controller
             'nilai.*.catatan'      => ['nullable', 'string', 'max:255'],
         ]);
 
-        $guru = auth()->user()->guru;
+        $guru = Auth::user()->guru;
 
         // Validasi Ketat: Pastikan guru yang menginput benar-benar mengampu rombel & mapel ini
         $isAuthorized = $guru->pengampus()
@@ -99,19 +99,34 @@ class PenilaianController extends Controller
             abort(403, 'Aksi ditolak. Anda tidak memiliki wewenang untuk mengisi nilai pada kelas dan mata pelajaran ini.');
         }
 
-        DB::transaction(function () use ($validated) {
-            foreach ($validated['nilai'] as $siswaId => $scores) {
-                $harian  = (float) ($scores['nilai_harian'] ?? 0);
-                $tugas   = (float) ($scores['tugas'] ?? 0);
-                $quiz    = (float) ($scores['quiz'] ?? 0);
-                $uts     = (float) ($scores['uts'] ?? 0);
-                $uas     = (float) ($scores['uas'] ?? 0);
-                $praktik = (float) ($scores['praktik'] ?? 0);
+        // Ambil daftar ID siswa yang SAH berada di rombel tersebut untuk mencegah manipulasi payload request
+        $validSiswaIds = Siswa::where('rombel_id', $validated['rombel_id'])
+            ->pluck('id')
+            ->toArray();
 
-                // Perhitungan Nilai Akhir
+        DB::transaction(function () use ($validated, $validSiswaIds) {
+            foreach ($validated['nilai'] as $siswaId => $scores) {
+                // Lewati jika ID siswa yang dikirim tidak terdaftar di rombel ini
+                if (!in_array((int) $siswaId, $validSiswaIds, true)) {
+                    continue;
+                }
+
+                // Ambil nilai secara aman (simpan sebagai null jika kosong agar tidak merusak data/rata-rata)
+                $harian  = isset($scores['nilai_harian']) && $scores['nilai_harian'] !== '' ? (float) $scores['nilai_harian'] : null;
+                $tugas   = isset($scores['tugas']) && $scores['tugas'] !== '' ? (float) $scores['tugas'] : null;
+                $quiz    = isset($scores['quiz']) && $scores['quiz'] !== '' ? (float) $scores['quiz'] : null;
+                $uts     = isset($scores['uts']) && $scores['uts'] !== '' ? (float) $scores['uts'] : null;
+                $uas     = isset($scores['uas']) && $scores['uas'] !== '' ? (float) $scores['uas'] : null;
+                $praktik = isset($scores['praktik']) && $scores['praktik'] !== '' ? (float) $scores['praktik'] : null;
+
+                // Untuk keperluan kalkulasi nilai akhir, anggap null sebagai 0 agar rumus matematika tetap berjalan
                 $nilaiAkhir = round(
-                    ($harian * 0.15) + ($tugas * 0.15) + ($quiz * 0.10) +
-                        ($uts * 0.20) + ($uas * 0.20) + ($praktik * 0.20),
+                    (($harian ?? 0) * 0.15) +
+                        (($tugas ?? 0) * 0.15) +
+                        (($quiz ?? 0) * 0.10) +
+                        (($uts ?? 0) * 0.20) +
+                        (($uas ?? 0) * 0.20) +
+                        (($praktik ?? 0) * 0.20),
                     2
                 );
 

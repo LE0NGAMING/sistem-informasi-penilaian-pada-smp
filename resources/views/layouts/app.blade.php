@@ -195,7 +195,8 @@
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
                     {{-- Menu Master Data (Tampil untuk Admin & Guru) --}}
-                    @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::GURU], true))
+                    {{--@if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::GURU], true))--}}
+                    @if($userRole === RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
                             <i class="bi bi-people-fill"></i>
@@ -214,10 +215,6 @@
                             <span>Data Mata Pelajaran</span>
                         </a>
                     </li>
-                    @endif
-
-                    {{-- Menu Khusus Admin Sekolah --}}
-                    @if($userRole === RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.rombel.*') ? 'active' : '' }}" href="{{ route('admin.rombel.index') }}">
                             <i class="bi bi-building"></i>
@@ -253,7 +250,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('guru.presensi.*') ? 'active' : '' }}" href="{{ route('guru.presensi.index') }}">
+                        <a class="nav-link {{ request()->routeIs('guru.presensi.*') ? 'active' : '' }}" href="#">
                             <i class="bi bi-calendar-check-fill"></i>
                             <span>Presensi Siswa</span>
                         </a>
