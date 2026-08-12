@@ -4,9 +4,7 @@ namespace App\Http\Controllers\Guru;
 
 use App\Enums\SemesterEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Mapel;
 use App\Models\Penilaian;
-use App\Models\Rombel;
 use App\Models\Siswa;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
@@ -17,30 +15,51 @@ use Illuminate\View\View;
 class PenilaianController extends Controller
 {
     /**
-     * Menampilkan lembar input dan daftar penilaian siswa.
+     * Menampilkan lembar input dan daftar penilaian siswa berdasarkan hak ampu guru.
      */
     public function index(Request $request): View
     {
+        $guru = auth()->user()->guru;
+
+        // Ambil daftar penugasan (pengampu) milik guru yang sedang login
+        // Di-load beserta relasi rombel dan mapel-nya
+        $pengampus = $guru->pengampus()->with(['rombel', 'mapel'])->get();
+
+        // Ekstraksi pilihan Rombel dan Mapel yang HANYA diajar oleh guru ini untuk dropdown
+        $rombelList = $pengampus->pluck('rombel')->unique('id')->sortBy('nama_rombel');
+        $mapelList = $pengampus->pluck('mapel')->unique('id')->sortBy('nama_mapel');
+
         $rombelId = $request->query('rombel_id');
         $mapelId = $request->query('mapel_id');
         $semester = $request->query('semester_id');
 
         $siswaList = collect();
 
+        // Jika filter dipilih, pastikan kombinasi rombel & mapel tersebut benar-benar diampu oleh guru ini
         if ($rombelId && $mapelId && $semester) {
+            $isAuthorized = $pengampus->contains(function ($item) use ($rombelId, $mapelId) {
+                return $item->rombel_id == $rombelId && $item->mapel_id == $mapelId;
+            });
+
+            if (!$isAuthorized) {
+                return redirect()
+                    ->route('guru.nilai.index')
+                    ->with('error', 'Anda tidak memiliki hak akses untuk mengajar kelas dan mata pelajaran tersebut.');
+            }
+
             $siswaList = Siswa::query()
                 ->where('rombel_id', $rombelId)
                 ->with(['penilaian' => function ($query) use ($mapelId, $semester) {
                     $query->where('mapel_id', $mapelId)
-                        ->where('semester', $semester); // Disesuaikan ke nama kolom 'semester' di DB
+                        ->where('semester', $semester);
                 }])
                 ->orderBy('nama_lengkap')
                 ->get();
         }
 
         return view('guru.nilai.index', [
-            'rombelList'   => Rombel::select('id', 'nama_rombel')->orderBy('nama_rombel')->get(),
-            'mapelList'    => Mapel::select('id', 'nama_mapel')->orderBy('nama_mapel')->get(),
+            'rombelList'   => $rombelList,
+            'mapelList'    => $mapelList,
             'semesterList' => SemesterEnum::cases(),
             'siswaList'    => $siswaList,
             'rombelId'     => $rombelId,
@@ -50,7 +69,7 @@ class PenilaianController extends Controller
     }
 
     /**
-     * Menyimpan atau memperbarui data penilaian siswa secara masal.
+     * Menyimpan atau memperbarui data penilaian siswa secara masal dengan validasi pengampu.
      */
     public function store(Request $request): RedirectResponse
     {
@@ -67,6 +86,18 @@ class PenilaianController extends Controller
             'nilai.*.praktik'      => ['nullable', 'numeric', 'min:0', 'max:100'],
             'nilai.*.catatan'      => ['nullable', 'string', 'max:255'],
         ]);
+
+        $guru = auth()->user()->guru;
+
+        // Validasi Ketat: Pastikan guru yang menginput benar-benar mengampu rombel & mapel ini
+        $isAuthorized = $guru->pengampus()
+            ->where('rombel_id', $validated['rombel_id'])
+            ->where('mapel_id', $validated['mapel_id'])
+            ->exists();
+
+        if (!$isAuthorized) {
+            abort(403, 'Aksi ditolak. Anda tidak memiliki wewenang untuk mengisi nilai pada kelas dan mata pelajaran ini.');
+        }
 
         DB::transaction(function () use ($validated) {
             foreach ($validated['nilai'] as $siswaId => $scores) {
@@ -97,7 +128,7 @@ class PenilaianController extends Controller
                         'siswa_id'  => $siswaId,
                         'mapel_id'  => $validated['mapel_id'],
                         'rombel_id' => $validated['rombel_id'],
-                        'semester'  => $validated['semester_id'], // Disesuaikan ke nama kolom 'semester' di DB
+                        'semester'  => $validated['semester_id'],
                     ],
                     [
                         'nilai_harian' => $harian,

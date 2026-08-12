@@ -76,7 +76,7 @@
                                 <a href="{{ route('admin.rombel.edit', $rombel->id) }}" class="btn btn-sm btn-warning text-white me-1">
                                     <i class="bi bi-pencil-square"></i>
                                 </a>
-                                <form action="{{ route('admin.rombel.destroy', $rombel->id) }}" method="POST" class="d-inline" onsubmit="return confirm('Yakin ingin menghapus rombel ini?')">
+                                <form action="{{ route('admin.rombel.destroy', $rombel->id) }}" method="POST" class="delete-form inline">
                                     @csrf
                                     @method('DELETE')
                                     <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>

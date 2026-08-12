@@ -6,11 +6,13 @@ use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\KelasController;
 use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\MapelController;
-use App\Http\Controllers\Admin\PresensiController;
+use App\Http\Controllers\Admin\PengampuController;
+use App\Http\Controllers\Admin\PresensiController as AdminPresensiController;
 use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\SiswaController;
 use App\Http\Controllers\Auth\LoginController;
-use App\Http\Controllers\Guru\PenilaianController;
+use App\Http\Controllers\Guru\PenilaianController as GuruPenilaianController;
+use App\Http\Controllers\Guru\PresensiController as GuruPresensiController;
 use App\Http\Controllers\Guru\RekapPenilaianController;
 use App\Http\Controllers\Guru\RaporController;
 use App\Http\Controllers\ProfileController;
@@ -18,7 +20,7 @@ use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardCo
 use App\Http\Controllers\SuperAdmin\UserController;
 use Illuminate\Support\Facades\Route;
 
-// Redirect Root
+// Redirect Root ke Halaman Login
 Route::get('/', fn() => to_route('login'));
 
 // Route Tamu (Guest)
@@ -44,19 +46,7 @@ Route::middleware('auth')->group(function () {
         });
 
     // =========================================================================
-    // 2. READ-ONLY MASTER DATA (SHARED: ADMIN SEKOLAH & GURU)
-    // =========================================================================
-    Route::middleware('role:' . RoleEnum::ADMIN_SEKOLAH->value . ',' . RoleEnum::GURU->value)
-        ->prefix('admin')
-        ->name('admin.')
-        ->group(function () {
-            Route::resource('siswa', SiswaController::class)->only(['index', 'create', 'show']);
-            Route::resource('guru', GuruController::class)->only(['index', 'create', 'show']);
-            Route::resource('mapel', MapelController::class)->only(['index', 'create', 'show']);
-        });
-
-    // =========================================================================
-    // 3. ADMIN SEKOLAH ROUTES (FULL CUD & MANAGEMENT)
+    // 2. ADMIN SEKOLAH ROUTES (FULL CUD & MANAGEMENT)
     // =========================================================================
     Route::middleware('role:' . RoleEnum::ADMIN_SEKOLAH->value)
         ->prefix('admin')
@@ -66,36 +56,37 @@ Route::middleware('auth')->group(function () {
 
             // Master Data Management
             Route::resource('kelas', KelasController::class);
+            Route::resource('siswa', SiswaController::class);
+            Route::resource('guru', GuruController::class);
+            Route::resource('mapel', MapelController::class);
 
             // Master Data Rombel + Fitur Plotting Siswa
             Route::resource('rombel', RombelController::class);
             Route::post('rombel/{rombel}/plot-siswa', [RombelController::class, 'plotSiswa'])->name('rombel.plot-siswa');
             Route::delete('rombel/{rombel}/unplot-siswa/{siswa}', [RombelController::class, 'unplotSiswa'])->name('rombel.unplot-siswa');
 
-            // Resource CUD yang dikomplementasi dari read-only
-            Route::resource('siswa', SiswaController::class)->except(['index', 'show', 'create']);
-            Route::resource('guru', GuruController::class)->except(['index', 'show', 'create']);
-            Route::resource('mapel', MapelController::class)->except(['index', 'show', 'create']);
-
             // Presensi Admin
-            Route::controller(PresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
+            Route::controller(AdminPresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/', 'store')->name('store');
                 Route::get('/rekap', 'rekap')->name('rekap');
             });
 
-            // Nilai Admin
-            Route::controller(PenilaianController::class)->prefix('nilai')->name('nilai.')->group(function () {
+            // Nilai Admin (Full Access)
+            Route::controller(GuruPenilaianController::class)->prefix('nilai')->name('nilai.')->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/', 'store')->name('store');
             });
 
-            // Log Aktivitas
+            // Pengampu Mengajar (Manajemen Plotting Guru -> Mapel -> Rombel)
+            Route::resource('pengampu', PengampuController::class);
+
+            // Log Aktivitas Sistem
             Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
         });
 
     // =========================================================================
-    // 4. GURU ROUTES
+    // 3. GURU ROUTES (DENGAN STRICT DATA SCOPING)
     // =========================================================================
     Route::middleware('role:' . RoleEnum::GURU->value)
         ->prefix('guru')
@@ -103,14 +94,14 @@ Route::middleware('auth')->group(function () {
         ->group(function () {
             Route::get('/dashboard', fn() => view('guru.dashboard'))->name('dashboard');
 
-            // Presensi Guru
-            Route::controller(PresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
-                Route::get('/', 'index')->name('index');
-                Route::post('/', 'store')->name('store');
-            });
+            // // Presensi Guru
+            // Route::controller(GuruPresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
+            //     Route::get('/', 'index')->name('index');
+            //     Route::post('/', 'store')->name('store');
+            // });
 
-            // Penilaian Guru
-            Route::controller(PenilaianController::class)->prefix('nilai')->name('nilai.')->group(function () {
+            // Penilaian Guru (Terbatas Berdasarkan Tabel Pengampu)
+            Route::controller(GuruPenilaianController::class)->prefix('nilai')->name('nilai.')->group(function () {
                 Route::get('/', 'index')->name('index');
                 Route::post('/', 'store')->name('store');
             });
@@ -130,15 +121,26 @@ Route::middleware('auth')->group(function () {
         });
 
     // =========================================================================
-    // 5. SIMPLE ROLE DASHBOARDS (STATIC VIEWS)
+    // 4. SIMPLE ROLE DASHBOARDS (STATIC VIEWS)
     // =========================================================================
-    Route::middleware('role:' . RoleEnum::KEPALA_SEKOLAH->value)->get('/kepala-sekolah/dashboard', fn() => view('kepalasekolah.dashboard'))->name('kepalasekolah.dashboard');
-    Route::middleware('role:' . RoleEnum::KURIKULUM->value)->get('/kurikulum/dashboard', fn() => view('dashboard.kurikulum'))->name('kurikulum.dashboard');
-    Route::middleware('role:' . RoleEnum::SISWA->value)->get('/siswa/dashboard', fn() => view('dashboard.siswa'))->name('siswa.dashboard');
-    Route::middleware('role:' . RoleEnum::ORANG_TUA->value)->get('/orang-tua/dashboard', fn() => view('dashboard.ortu'))->name('ortu.dashboard');
+    Route::middleware('role:' . RoleEnum::KEPALA_SEKOLAH->value)
+        ->get('/kepala-sekolah/dashboard', fn() => view('kepalasekolah.dashboard'))
+        ->name('kepalasekolah.dashboard');
+
+    Route::middleware('role:' . RoleEnum::KURIKULUM->value)
+        ->get('/kurikulum/dashboard', fn() => view('dashboard.kurikulum'))
+        ->name('kurikulum.dashboard');
+
+    Route::middleware('role:' . RoleEnum::SISWA->value)
+        ->get('/siswa/dashboard', fn() => view('dashboard.siswa'))
+        ->name('siswa.dashboard');
+
+    Route::middleware('role:' . RoleEnum::ORANG_TUA->value)
+        ->get('/orang-tua/dashboard', fn() => view('dashboard.ortu'))
+        ->name('ortu.dashboard');
 
     // =========================================================================
-    // 6. PROFILE ROUTES
+    // 5. PROFILE ROUTES (SHARED FOR ALL AUTH USERS)
     // =========================================================================
     Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
         Route::get('/', 'edit')->name('edit');

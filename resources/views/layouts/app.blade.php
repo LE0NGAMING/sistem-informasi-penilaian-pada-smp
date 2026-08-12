@@ -225,6 +225,12 @@
                         </a>
                     </li>
                     <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.pengampu.*') ? 'active' : '' }}" href="{{ route('admin.pengampu.index') }}">
+                            <i class="bi bi-person-fill-add"></i>
+                            <span>Penugasan Mengajar</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.presensi.*') ? 'active' : '' }}" href="{{ route('admin.presensi.index') }}">
                             <i class="bi bi-calendar-check-fill"></i>
                             <span>Presensi Siswa</span>
@@ -373,7 +379,7 @@
     <!-- Sidebar Toggle & Global UI Scripts -->
     <script>
         document.addEventListener('DOMContentLoaded', function() {
-            // Sidebar Toggle Logic
+            // 1. Sidebar Toggle Logic
             const sidebarToggle = document.getElementById('sidebarToggle');
             const wrapper = document.getElementById('wrapper');
 
@@ -384,7 +390,7 @@
                 });
             }
 
-            // Auto close Bootstrap alert after 3 seconds
+            // 2. Auto close Bootstrap alert after 3 seconds
             const alertElements = document.querySelectorAll('.alert');
             alertElements.forEach(function(alert) {
                 setTimeout(function() {
@@ -395,33 +401,24 @@
                 }, 3000);
             });
 
-            // Global SweetAlert Confirm Delete (Event Delegation)
-            document.addEventListener('click', function(e) {
-                const deleteBtn = e.target.closest('.btn-delete');
-                if (deleteBtn) {
-                    e.preventDefault();
-                    const form = deleteBtn.closest('form');
-                    const nama = deleteBtn.getAttribute('data-nama') || 'data ini';
+            // 3. Global SweetAlert Confirm Delete (Event Delegation yang bersih & stabil)
+            document.addEventListener('submit', function(e) {
+                const form = e.target;
+                if (form && form.classList.contains('delete-form')) {
+                    e.preventDefault(); // Hentikan submit form sementara
 
                     Swal.fire({
                         title: 'Apakah Anda yakin?',
-                        html: `Data <strong>${nama}</strong> akan dihapus permanen!`,
+                        text: "Data yang dihapus tidak dapat dikembalikan!",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#dc3545',
-                        cancelButtonColor: '#6c757d',
-                        confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Ya, Hapus!',
-                        cancelButtonText: 'Batal',
-                        reverseButtons: true,
-                        customClass: {
-                            popup: 'rounded-4 border-0 shadow-lg',
-                            confirmButton: 'btn btn-danger px-4 py-2 me-2',
-                            cancelButton: 'btn btn-secondary px-4 py-2'
-                        },
-                        buttonsStyling: false
+                        confirmButtonColor: '#d33',
+                        cancelButtonColor: '#3085d6',
+                        confirmButtonText: 'Ya, Hapus!',
+                        cancelButtonText: 'Batal'
                     }).then((result) => {
-                        if (result.isConfirmed && form) {
-                            form.submit();
+                        if (result.isConfirmed) {
+                            form.submit(); // Lanjutkan submit form asli jika dikonfirmasi
                         }
                     });
                 }

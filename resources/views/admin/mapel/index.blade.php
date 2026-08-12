@@ -113,10 +113,10 @@
                                     <a href="{{ route('admin.mapel.edit', $mapel) }}" class="btn btn-sm btn-outline-warning">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.mapel.destroy', $mapel) }}" method="POST" class="d-inline">
+                                    <form action="{{ route('admin.mapel.destroy', $mapel) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
-                                        <button type="button" class="btn btn-sm btn-outline-danger btn-delete" data-nama="{{ $mapel->nama_mapel }}" title="Hapus Data">
+                                        <button type="submit" class="btn btn-sm btn-outline-danger">
                                             <i class="bi bi-trash"></i>
                                         </button>
                                     </form>
@@ -146,7 +146,7 @@
     </div>
 </div>
 
-{{-- SweetAlert2 Script --}}
+<!-- {{-- SweetAlert2 Script --}}
 @push('scripts')
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -181,5 +181,5 @@
         });
     });
 </script>
-@endpush
+@endpush -->
 @endsection

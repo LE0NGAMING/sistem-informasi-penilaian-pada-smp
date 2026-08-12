@@ -14,21 +14,6 @@
         @endif
     </div>
 
-    <!-- {{-- Alert Notifikasi --}}
-    @session('success')
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ $value }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endsession -->
-
-    @session('error')
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $value }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endsession
-
     {{-- Filter & Pencarian --}}
     <div class="card border-0 shadow-sm rounded-3 mb-4">
         <div class="card-body p-3">
@@ -108,7 +93,7 @@
                                     <a href="{{ route('admin.siswa.edit', $siswa) }}" class="btn btn-sm btn-outline-warning">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.siswa.destroy', $siswa) }}" method="POST" onsubmit="return confirm('Hapus data siswa ini?')">
+                                    <form action="{{ route('admin.siswa.destroy', $siswa) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger">

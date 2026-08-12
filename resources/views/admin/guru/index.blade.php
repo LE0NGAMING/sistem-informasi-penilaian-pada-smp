@@ -73,7 +73,7 @@
                             <th>Nama Lengkap</th>
                             <th>Jenis Kelamin</th>
                             <th>Tanggal Lahir</th>
-                            <th>Mata Pelajaran</th>
+                            <th>Mata Pelajaran Utama</th>
                             <th>No. WA/HP</th>
                             @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
                             <th class="text-center pe-4">Aksi</th>
@@ -115,7 +115,7 @@
                                     <a href="{{ route('admin.guru.edit', $guru) }}" class="btn btn-sm btn-outline-warning">
                                         <i class="bi bi-pencil-square"></i>
                                     </a>
-                                    <form action="{{ route('admin.guru.destroy', $guru) }}" method="POST" onsubmit="return confirm('Hapus data guru ini?')">
+                                    <form action="{{ route('admin.guru.destroy', $guru) }}" method="POST" class="delete-form inline">
                                         @csrf
                                         @method('DELETE')
                                         <button type="submit" class="btn btn-sm btn-outline-danger">

@@ -68,4 +68,9 @@ class Guru extends Model
         'tanggal_mulai_mengajar' => 'date',
         'tanggal_pensiun'        => 'date',
     ];
+
+    public function pengampus(): HasMany
+    {
+        return $this->hasMany(Pengampu::class);
+    }
 }
