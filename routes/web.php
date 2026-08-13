@@ -130,6 +130,8 @@ Route::middleware('auth')->group(function () {
         Route::controller(WaliKelasPresensiController::class)->prefix('presensi')->name('presensi.')->group(function () {
             Route::get('/', 'index')->name('index');
             Route::post('/', 'store')->name('store');
+            Route::get('/export-excel', 'exportExcel')->name('exportExcel');
+            Route::get('/export-pdf', 'exportPdf')->name('exportPdf');
         });
     });
 

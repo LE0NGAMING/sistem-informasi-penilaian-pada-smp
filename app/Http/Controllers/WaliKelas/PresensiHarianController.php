@@ -14,6 +14,7 @@ use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
 use Illuminate\View\View;
+use Symfony\Component\HttpFoundation\StreamedResponse;
 
 class PresensiHarianController extends Controller
 {
@@ -39,6 +40,8 @@ class PresensiHarianController extends Controller
 
         // Ambil tanggal dari parameter URL, jika kosong gunakan hari ini
         $tanggal = $request->query('tanggal', Carbon::today()->toDateString());
+
+        $isLocked = Carbon::parse($tanggal)->lt(Carbon::today());
 
         // Ambil data siswa beserta presensinya pada tanggal tersebut
         $siswas = Siswa::query()
@@ -73,6 +76,11 @@ class PresensiHarianController extends Controller
         $tanggal = $validated['tanggal'];
         $waktuSekarang = now();
 
+        // Validasi Sisi Server: Tolak jika mencoba menyimpan tanggal yang sudah terkunci
+        if (Carbon::parse($tanggal)->lt(Carbon::today())) {
+            return back()->with('error', 'Presensi tanggal ini sudah dikunci dan tidak dapat diubah.');
+        }
+
         $dataPresensi = [];
 
         // Format data menjadi array flat untuk keperluan upsert
@@ -96,5 +104,79 @@ class PresensiHarianController extends Controller
         );
 
         return back()->with('success', 'Data presensi untuk tanggal ' . Carbon::parse($tanggal)->translatedFormat('d F Y') . ' berhasil disimpan!');
+    }
+
+    /**
+     * Export Rekap Presensi Bulanan ke Excel (HTML Table Stream)
+     */
+    public function exportExcel(Request $request): StreamedResponse|RedirectResponse
+    {
+        $guru = Auth::user()?->guru;
+        $rombelBinaan = Rombel::where('wali_kelas_id', $guru?->id)->first();
+
+        if (!$rombelBinaan) {
+            return back()->with('error', 'Anda tidak terdaftar sebagai wali kelas.');
+        }
+
+        $bulan = $request->query('bulan', Carbon::now()->month);
+        $tahun = $request->query('tahun', Carbon::now()->year);
+        $namaBulan = Carbon::createFromDate($tahun, (int)$bulan, 1)->translatedFormat('F Y');
+
+        $siswas = Siswa::where('rombel_id', $rombelBinaan->id)->orderBy('nama_lengkap')->get();
+
+        $presensiData = PresensiHarian::whereIn('siswa_id', $siswas->pluck('id'))
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->get()
+            ->groupBy('siswa_id');
+
+        $fileName = 'Rekap_Presensi_' . str_replace(' ', '_', $rombelBinaan->nama_rombel ?? $rombelBinaan->nama_kelas) . '_' . $namaBulan . '.xls';
+
+        return response()->stream(function () use ($siswas, $presensiData, $rombelBinaan, $namaBulan) {
+            echo view('walikelas.presensi.excel', [
+                'siswas'       => $siswas,
+                'presensiData' => $presensiData,
+                'rombelBinaan' => $rombelBinaan,
+                'namaBulan'    => $namaBulan,
+            ])->render();
+        }, 200, [
+            'Content-Type'        => 'application/vnd.ms-excel',
+            'Content-Disposition' => 'attachment; filename="' . $fileName . '"',
+            'Cache-Control'       => 'max-age=0',
+        ]);
+    }
+
+    /**
+     * Export / Cetak Rekap Presensi PDF
+     */
+    public function exportPdf(Request $request)
+    {
+        $guru = Auth::user()?->guru;
+        $rombelBinaan = Rombel::where('wali_kelas_id', $guru?->id)->first();
+
+        if (!$rombelBinaan) {
+            return back()->with('error', 'Anda tidak terdaftar sebagai wali kelas.');
+        }
+
+        $bulan = $request->query('bulan', Carbon::now()->month);
+        $tahun = $request->query('tahun', Carbon::now()->year);
+        $namaBulan = Carbon::createFromDate($tahun, (int)$bulan, 1)->translatedFormat('F Y');
+
+        $siswas = Siswa::where('rombel_id', $rombelBinaan->id)->orderBy('nama_lengkap')->get();
+
+        $presensiData = PresensiHarian::whereIn('siswa_id', $siswas->pluck('id'))
+            ->whereYear('tanggal', $tahun)
+            ->whereMonth('tanggal', $bulan)
+            ->get()
+            ->groupBy('siswa_id');
+
+        // Menggunakan view cetak HTML khusus siap print / DomPDF
+        return view('walikelas.presensi.pdf', [
+            'siswas'       => $siswas,
+            'presensiData' => $presensiData,
+            'rombelBinaan' => $rombelBinaan,
+            'namaBulan'    => $namaBulan,
+            'guru'         => $guru,
+        ]);
     }
 }
