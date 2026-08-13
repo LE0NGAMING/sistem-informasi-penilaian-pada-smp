@@ -233,6 +233,12 @@
                             <span>Presensi Siswa</span>
                         </a>
                     </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('admin.nilai.*') ? 'active' : '' }}" href="{{ route('admin.nilai.index') }}">
+                            <i class="bi bi-pencil-square"></i>
+                            <span>Input Penilaian</span>
+                        </a>
+                    </li>
                     @endif
 
                     {{-- Menu Khusus Guru --}}
@@ -250,7 +256,7 @@
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('guru.presensi.*') ? 'active' : '' }}" href="#">
+                        <a class="nav-link {{ request()->routeIs('walikelas.presensi.*') ? 'active' : '' }}" href="{{ route('walikelas.presensi.index') }}">
                             <i class="bi bi-calendar-check-fill"></i>
                             <span>Presensi Siswa</span>
                         </a>

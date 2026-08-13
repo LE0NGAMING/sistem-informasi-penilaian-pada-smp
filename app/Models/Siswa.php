@@ -68,9 +68,9 @@ class Siswa extends Model
         return $this->hasMany(Penilaian::class, 'siswa_id');
     }
 
-    public function presensis(): HasMany
+    public function presensiHarian(): HasMany
     {
-        return $this->hasMany(Presensi::class, 'siswa_id');
+        return $this->hasMany(PresensiHarian::class, 'siswa_id');
     }
 
     public function rapor(): HasMany

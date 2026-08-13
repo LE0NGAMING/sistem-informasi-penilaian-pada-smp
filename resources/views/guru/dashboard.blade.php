@@ -16,7 +16,7 @@
                         <span class="badge bg-primary-subtle text-primary mb-2">Presensi</span>
                         <h4 class="fw-bold text-dark mb-1">Presensi Siswa</h4>
                         <p class="text-muted small mb-3">Catat atau perbarui kehadiran siswa harian.</p>
-                        <a href="#" class="btn btn-sm btn-primary px-3">
+                        <a href="{{ route('walikelas.presensi.index') }}" class="btn btn-sm btn-primary px-3">
                             <i class="bi bi-calendar-check me-1"></i> Buka Presensi
                         </a>
                     </div>
