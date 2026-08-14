@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Guru;
+namespace App\Http\Controllers\WaliKelas;
 
 use App\Enums\SemesterEnum;
 use App\Http\Controllers\Controller;

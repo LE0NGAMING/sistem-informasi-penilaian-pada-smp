@@ -1,0 +1,29 @@
+<?php
+
+namespace App\Models;
+
+use Illuminate\Database\Eloquent\Factories\HasFactory;
+use Illuminate\Database\Eloquent\Model;
+
+class NilaiEkskul extends Model
+{
+    use HasFactory;
+
+    protected $table = 'nilai_ekskul';
+    protected $guarded = ['id'];
+
+    public function siswa()
+    {
+        return $this->belongsTo(Siswa::class, 'siswa_id');
+    }
+
+    public function ekstrakurikuler()
+    {
+        return $this->belongsTo(Ekstrakurikuler::class, 'ekstrakurikuler_id');
+    }
+
+    public function tahunAjaran()
+    {
+        return $this->belongsTo(TahunAjaran::class, 'tahun_ajaran_id');
+    }
+}
