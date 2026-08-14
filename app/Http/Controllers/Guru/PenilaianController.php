@@ -7,6 +7,7 @@ use App\Http\Controllers\Controller;
 use App\Models\Penilaian;
 use App\Models\Siswa;
 use App\Models\TahunAjaran;
+use App\Models\Mapel;
 use Illuminate\Http\RedirectResponse;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
@@ -142,6 +143,9 @@ class PenilaianController extends Controller
                 $deskKeterampilan = $scores['deskripsi_keterampilan'] ?? null;
                 $catatan          = $scores['catatan'] ?? null;
 
+                $mapel = Mapel::findOrFail($validated['mapel_id']);
+                $mapelName = $mapel->nama_mapel;
+
                 // -------------------------------------------------------------
                 // CEK: Jika baris siswa ini 100% KOSONG, abaikan (jangan simpan)
                 // -------------------------------------------------------------
@@ -165,6 +169,19 @@ class PenilaianController extends Controller
                 // 3. Overall Nilai Akhir
                 $nilaiAkhir = $this->calculateOverallNilai($nilaiPengetahuan, $nilaiKeterampilan);
                 $predikat   = $this->calculatePredikat($nilaiAkhir);
+
+                $deskPengetahuan = match ($predikatPengetahuan) {
+                    'A' => "Sangat baik dalam menguasai seluruh kompetensi dasar mata pelajaran {$mapelName}.",
+                    'B' => "Memiliki kemampuan baik dalam menguasai kompetensi dasar mata pelajaran {$mapelName}.",
+                    'C' => "Cukup mampu menguasai kompetensi dasar, namun perlu bimbingan lebih lanjut.",
+                    default => "Perlu bimbingan intensif dalam memahami materi dasar.",
+                };
+                $deskKeterampilan = match ($predikatKeterampilan) {
+                    'A' => "Sangat terampil dalam mempraktikkan, mempresentasikan, dan memodifikasi hasil projek dalam pelajaran {$mapelName}.",
+                    'B' => "Terampil dalam mempraktikkan dan mempresentasikan hasil projek, namun perlu sedikit peningkatan pada kreativitas.",
+                    'C' => "Mampu mempraktikkan dasar-dasar keterampilan, namun perlu latihan rutin untuk meningkatkan keahlian.",
+                    default => "Perlu pendampingan intensif untuk membangun keterampilan dasar.",
+                };
 
                 Penilaian::updateOrCreate(
                     [
