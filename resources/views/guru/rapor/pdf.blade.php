@@ -153,6 +153,22 @@
         </tbody>
     </table>
 
+    <!-- Tabel Ketidakhadiran -->
+    <table>
+        <tr>
+            <td>Sakit</td>
+            <td>: {{ $siswa->rekap_presensi->sakit ?? 0 }} hari</td>
+        </tr>
+        <tr>
+            <td>Izin</td>
+            <td>: {{ $siswa->rekap_presensi->izin ?? 0 }} hari</td>
+        </tr>
+        <tr>
+            <td>Tanpa Keterangan (Alpa)</td>
+            <td>: {{ $siswa->rekap_presensi->alpa ?? 0 }} hari</td>
+        </tr>
+    </table>
+
     {{-- Tanda Tangan --}}
     <table class="footer-sign">
         <tr>

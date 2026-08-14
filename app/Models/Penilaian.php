@@ -17,13 +17,28 @@ class Penilaian extends Model
         'siswa_id',
         'mapel_id',
         'rombel_id',
+        'tahun_ajaran_id',
         'semester',
+
+        // KI-3 (Pengetahuan)
         'nilai_harian',
         'tugas',
         'quiz',
         'uts',
         'uas',
+        'nilai_pengetahuan',
+        'predikat_pengetahuan',
+        'deskripsi_pengetahuan',
+
+        // KI-4 (Keterampilan)
         'praktik',
+        'proyek',
+        'portofolio',
+        'nilai_keterampilan',
+        'predikat_keterampilan',
+        'deskripsi_keterampilan',
+
+        // Field Umum & Compatibility
         'nilai_akhir',
         'predikat',
         'is_remedial',
@@ -36,15 +51,25 @@ class Penilaian extends Model
     protected function casts(): array
     {
         return [
-            'semester'     => SemesterEnum::class,
-            'nilai_harian' => 'float',
-            'tugas'        => 'float',
-            'quiz'         => 'float',
-            'uts'          => 'float',
-            'uas'          => 'float',
-            'praktik'      => 'float',
-            'nilai_akhir'  => 'float',
-            'is_remedial'  => 'boolean',
+            'semester'             => SemesterEnum::class,
+
+            // Cast Float KI-3
+            'nilai_harian'         => 'float',
+            'tugas'                => 'float',
+            'quiz'                 => 'float',
+            'uts'                  => 'float',
+            'uas'                  => 'float',
+            'nilai_pengetahuan'    => 'float',
+
+            // Cast Float KI-4
+            'praktik'              => 'float',
+            'proyek'               => 'float',
+            'portofolio'           => 'float',
+            'nilai_keterampilan'   => 'float',
+
+            // Cast Field Umum
+            'nilai_akhir'          => 'float',
+            'is_remedial'          => 'boolean',
         ];
     }
 
@@ -65,5 +90,10 @@ class Penilaian extends Model
     public function rombel(): BelongsTo
     {
         return $this->belongsTo(Rombel::class);
+    }
+
+    public function tahunAjaran(): BelongsTo
+    {
+        return $this->belongsTo(TahunAjaran::class);
     }
 }
