@@ -159,6 +159,22 @@
 
 <body>
 
+    @php
+    $user = auth()->user();
+    $userRole = $user?->role;
+
+    $dashboardRoute = match($userRole) {
+    RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
+    RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
+    RoleEnum::KEPALA_SEKOLAH=> route('kepalasekolah.dashboard'),
+    RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
+    RoleEnum::GURU => route('guru.dashboard'),
+    RoleEnum::SISWA => route('siswa.dashboard'),
+    RoleEnum::ORANG_TUA => route('ortu.dashboard'),
+    default => route('login'),
+    };
+    @endphp
+
     <div id="wrapper">
         <!-- Sidebar -->
         <aside id="sidebar-wrapper">
@@ -171,20 +187,6 @@
                 <div class="sidebar-heading">Menu Utama</div>
                 <ul class="nav flex-column">
                     <li class="nav-item">
-                        @php
-                        $userRole = auth()->user()?->role;
-                        $dashboardRoute = match($userRole) {
-                        RoleEnum::SUPER_ADMIN => route('superadmin.dashboard'),
-                        RoleEnum::ADMIN_SEKOLAH => route('admin.dashboard'),
-                        RoleEnum::KEPALA_SEKOLAH => route('kepalasekolah.dashboard'),
-                        RoleEnum::KURIKULUM => route('kurikulum.dashboard'),
-                        RoleEnum::GURU => route('guru.dashboard'),
-                        RoleEnum::SISWA => route('siswa.dashboard'),
-                        RoleEnum::ORANG_TUA => route('ortu.dashboard'),
-                        default => route('login'),
-                        };
-                        @endphp
-
                         <a href="{{ $dashboardRoute }}" class="nav-link {{ request()->routeIs('*.dashboard') ? 'active' : '' }}">
                             <i class="bi bi-speedometer2"></i>
                             <span>Dashboard</span>
@@ -194,8 +196,7 @@
 
                 <div class="sidebar-heading">Akademik & Penilaian</div>
                 <ul class="nav flex-column">
-                    {{-- Menu Master Data (Tampil untuk Admin & Guru) --}}
-                    {{--@if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::GURU], true))--}}
+                    {{-- Menu Master Data (Tampil untuk Admin Sekolah) --}}
                     @if($userRole === RoleEnum::ADMIN_SEKOLAH)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('admin.siswa.*') ? 'active' : '' }}" href="{{ route('admin.siswa.index') }}">
@@ -241,7 +242,7 @@
                     </li>
                     @endif
 
-                    {{-- Menu Khusus Guru --}}
+                    {{-- Menu Khusus Guru & Wali Kelas --}}
                     @if($userRole === RoleEnum::GURU)
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('guru.nilai.*') ? 'active' : '' }}" href="{{ route('guru.nilai.index') }}">
@@ -258,19 +259,25 @@
                     <li class="nav-item">
                         <a class="nav-link {{ request()->routeIs('walikelas.presensi.*') ? 'active' : '' }}" href="{{ route('walikelas.presensi.index') }}">
                             <i class="bi bi-calendar-check-fill"></i>
-                            <span>Presensi Siswa</span>
+                            <span>Presensi Rombel</span>
                         </a>
                     </li>
                     <li class="nav-item">
-                        <a class="nav-link {{ request()->routeIs('guru.rapor.*') ? 'active' : '' }}" href="{{ route('guru.rapor.index') }}">
-                            <i class="bi bi-file-earmark-text-fill"></i>
+                        <a class="nav-link {{ request()->routeIs('walikelas.ekskul.*') ? 'active' : '' }}" href="{{ route('walikelas.ekskul.index') }}">
+                            <i class="bi bi-calendar-check-fill"></i>
+                            <span>Input Nilai Ekskul</span>
+                        </a>
+                    </li>
+                    <li class="nav-item">
+                        <a class="nav-link {{ request()->routeIs('walikelas.rapor.*') ? 'active' : '' }}" href="{{ route('walikelas.rapor.index') }}">
+                            <i class="bi bi-printer-fill"></i>
                             <span>Cetak Rapor</span>
                         </a>
                     </li>
                     @endif
                 </ul>
 
-                {{-- Pengaturan Hanya Tampil Untuk Admin --}}
+                {{-- Pengaturan Hanya Tampil Untuk Admin & Super Admin --}}
                 @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::SUPER_ADMIN], true))
                 <div class="sidebar-heading">Pengaturan</div>
                 <ul class="nav flex-column">
@@ -310,28 +317,23 @@
                     <div class="dropdown">
                         <a href="#" class="d-flex align-items-center text-decoration-none dropdown-toggle text-dark gap-2" id="userDropdown" data-bs-toggle="dropdown" aria-expanded="false">
                             <div class="user-avatar">
-                                {{ strtoupper(substr(auth()->user()?->name ?? 'U', 0, 1)) }}
+                                {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
                             </div>
                             <div class="d-none d-md-block text-start me-1">
                                 <div class="fw-semibold small text-truncate" style="max-width: 150px;">
-                                    {{ auth()->user()?->name ?? 'Pengguna' }}
+                                    {{ $user?->name ?? 'Pengguna' }}
                                 </div>
                             </div>
                         </a>
 
                         <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2" aria-labelledby="userDropdown">
                             <li class="px-3 py-2 border-bottom d-md-none">
-                                <div class="fw-semibold">{{ auth()->user()?->name ?? 'Pengguna' }}</div>
-                                <small class="text-muted">{{ auth()->user()?->email ?? '' }}</small>
+                                <div class="fw-semibold">{{ $user?->name ?? 'Pengguna' }}</div>
+                                <small class="text-muted">{{ $user?->email ?? '' }}</small>
                             </li>
                             <li>
                                 <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
                                     <i class="bi bi-person me-2 text-secondary"></i>Profil Saya
-                                </a>
-                            </li>
-                            <li>
-                                <a class="dropdown-item py-2" href="{{ route('profile.edit') }}">
-                                    <i class="bi bi-key me-2 text-secondary"></i>Ubah Password
                                 </a>
                             </li>
                             <li>
@@ -393,7 +395,7 @@
                 });
             }
 
-            // 2. Auto close Bootstrap alert after 3 seconds
+            // 2. Auto close Bootstrap alert after 4 seconds
             const alertElements = document.querySelectorAll('.alert');
             alertElements.forEach(function(alert) {
                 setTimeout(function() {
@@ -401,27 +403,27 @@
                     if (bsAlert) {
                         bsAlert.close();
                     }
-                }, 3000);
+                }, 4000);
             });
 
-            // 3. Global SweetAlert Confirm Delete (Event Delegation yang bersih & stabil)
+            // 3. Global SweetAlert Confirm Delete (Event Delegation)
             document.addEventListener('submit', function(e) {
                 const form = e.target;
                 if (form && form.classList.contains('delete-form')) {
-                    e.preventDefault(); // Hentikan submit form sementara
+                    e.preventDefault();
 
                     Swal.fire({
                         title: 'Apakah Anda yakin?',
                         text: "Data yang dihapus tidak dapat dikembalikan!",
                         icon: 'warning',
                         showCancelButton: true,
-                        confirmButtonColor: '#d33',
-                        cancelButtonColor: '#3085d6',
+                        confirmButtonColor: '#dc2626',
+                        cancelButtonColor: '#64748b',
                         confirmButtonText: 'Ya, Hapus!',
                         cancelButtonText: 'Batal'
                     }).then((result) => {
                         if (result.isConfirmed) {
-                            form.submit(); // Lanjutkan submit form asli jika dikonfirmasi
+                            form.submit();
                         }
                     });
                 }
