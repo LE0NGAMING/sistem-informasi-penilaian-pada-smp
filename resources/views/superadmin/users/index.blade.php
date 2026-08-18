@@ -63,7 +63,6 @@
                     <button type="button" id="btnUserDropdown" class="flex items-center gap-2.5 bg-slate-50 hover:bg-slate-100 px-4 py-1.5 rounded-full border border-slate-200 transition cursor-pointer">
                         <div class="text-left">
                             <p class="text-xs font-bold text-slate-800 leading-tight">{{ Auth::user()->name ?? 'Super Administrator' }}</p>
-                            <p class="text-[10px] text-blue-600 font-medium leading-tight">{{ ucwords(str_replace('_', ' ', Auth::user()->role ?? 'System Admin')) }}</p>
                         </div>
                         <svg class="w-3.5 h-3.5 text-slate-400 shrink-0 ml-1" style="width: 14px; height: 14px;" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M19 9l-7 7-7-7" />

@@ -22,6 +22,6 @@ class DashboardController extends Controller
         // 5 Pengguna terbaru
         $latestUsers = User::latest()->take(5)->get();
 
-        return view('dashboard.super_admin', compact('totalAdmin', 'totalUser', 'latestUsers'));
+        return view('superadmin.super_admin', compact('totalAdmin', 'totalUser', 'latestUsers'));
     }
 }

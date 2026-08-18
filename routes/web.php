@@ -8,6 +8,7 @@ use App\Http\Controllers\ProfileController;
 
 // Super Admin Controllers
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
+use App\Http\Controllers\SuperAdmin\AdminSekolahController;
 use App\Http\Controllers\SuperAdmin\UserController;
 
 // Admin Sekolah Controllers
@@ -53,13 +54,22 @@ Route::middleware('auth')->group(function () {
 
     // -------------------------------------------------------------------------
     // 1. SUPER ADMIN ROUTES
-    // -------------------------------------------------------------------------
     Route::middleware('role:' . RoleEnum::SUPER_ADMIN->value)
         ->prefix('super-admin')
         ->name('superadmin.')
         ->group(function () {
             Route::get('/dashboard', [SuperAdminDashboardController::class, 'index'])->name('dashboard');
-            Route::resource('users', UserController::class)->except(['create', 'edit', 'show']);
+
+            // Manajemen khusus Admin Sekolah
+            Route::resource('admin-sekolah', AdminSekolahController::class)->except(['create', 'edit', 'show']);
+            Route::patch('admin-sekolah/{user}/toggle-status', [AdminSekolahController::class, 'toggleStatus'])->name('admin-sekolah.toggle-status');
+            Route::post('admin-sekolah/{user}/reset-password', [AdminSekolahController::class, 'resetPassword'])->name('admin-sekolah.reset-password');
+
+            // Fitur Infrastruktur & Sistem
+            Route::get('/audit-logs', [SuperAdminLogController::class, 'index'])->name('logs.index');
+            Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
+            Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
+            Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
         });
 
     // -------------------------------------------------------------------------

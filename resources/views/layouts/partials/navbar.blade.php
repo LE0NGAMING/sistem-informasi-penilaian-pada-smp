@@ -1,65 +1,65 @@
-<header class="app-header">
-    <div class="d-flex align-items-center gap-3">
-        <button class="btn btn-icon d-lg-none p-0 border-0 fs-4 text-dark" id="sidebarToggle" type="button">
-            <i class="bi bi-list"></i>
+@php
+$user = auth()->user();
+@endphp
+
+<header class="h-[70px] bg-white border-b border-slate-200 px-6 flex items-center justify-between sticky top-0 z-10 shadow-xs">
+    <div class="flex items-center gap-4">
+        <button class="p-2 text-slate-600 hover:bg-slate-100 rounded-lg border border-slate-200 transition focus:outline-none" id="sidebarToggle" aria-label="Toggle Sidebar">
+            <i class="bi bi-list text-xl leading-none"></i>
         </button>
-        <div class="d-none d-md-block">
-            <h5 class="fw-bold mb-0" style="font-size: 1.1rem;">@yield('title', 'Dashboard')</h5>
-            <small class="text-muted" style="font-size: 0.8rem;">Tahun Ajaran 2025/2026 — Semester Ganjil</small>
-        </div>
+        <h1 class="text-base font-semibold text-slate-800 hidden sm:block">@yield('page-title', 'Dashboard')</h1>
     </div>
 
-    <div class="d-flex align-items-center gap-3">
-        <!-- Quick Action Notification Dropdown -->
-        <div class="dropdown">
-            <button class="btn btn-light rounded-circle position-relative p-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px; background: #F3F4F6;" data-bs-toggle="dropdown">
-                <i class="bi bi-bell text-secondary"></i>
-                <span class="position-absolute top-0 start-100 translate-middle p-1 bg-danger border border-light rounded-circle"></span>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 p-2" style="width: 300px; border-radius: var(--radius-md);">
-                <li>
-                    <h6 class="dropdown-header fw-bold">Notifikasi</h6>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li>
-                    <a class="dropdown-item rounded py-2 fs-7" href="#">
-                        <div class="fw-semibold">Rapor 7-A Selesai Di-generate</div>
-                        <small class="text-muted">10 menit yang lalu</small>
-                    </a>
-                </li>
-            </ul>
-        </div>
+    <!-- User Profile Dropdown -->
+    <div class="relative">
+        <button id="userMenuBtn" class="flex items-center gap-3 text-slate-700 hover:text-slate-900 focus:outline-none py-1">
+            <div class="w-9 h-9 bg-slate-200 text-slate-700 rounded-full flex items-center justify-center font-semibold text-sm">
+                {{ strtoupper(substr($user?->name ?? 'U', 0, 1)) }}
+            </div>
+            <div class="hidden md:block text-left">
+                <div class="font-semibold text-sm truncate max-w-[150px]">
+                    {{ $user?->name ?? 'Pengguna' }}
+                </div>
+            </div>
+            <i class="bi bi-chevron-down text-xs text-slate-400"></i>
+        </button>
 
-        <!-- User Profile Dropdown -->
-        <div class="dropdown">
-            <button class="btn p-0 border-0 d-flex align-items-center gap-2" data-bs-toggle="dropdown">
-                <div class="rounded-circle bg-success text-white d-flex align-items-center justify-content-center fw-bold" style="width: 38px; height: 38px; background: linear-gradient(135deg, #557262 0%, #2C3531 100%) !important;">
-                    {{ strtoupper(substr(auth()->user()->name, 0, 1)) }}
-                </div>
-                <div class="text-start d-none d-sm-block">
-                    <div class="fw-semibold fs-7 leading-tight" style="font-size: 0.875rem;">{{ auth()->user()->name }}</div>
-                    <div class="text-muted fs-8" style="font-size: 0.75rem; text-transform: capitalize;">{{ str_replace('_', ' ', auth()->user()->role) }}</div>
-                </div>
-                <i class="bi bi-chevron-down text-muted fs-8 ms-1"></i>
-            </button>
-            <ul class="dropdown-menu dropdown-menu-end shadow-sm border-0 mt-2 p-2" style="border-radius: var(--radius-md);">
-                <li>
-                    <a class="dropdown-item rounded" href="#"><i class="bi bi-person me-2"></i> Profil Anda</a>
-                </li>
-                <li>
-                    <hr class="dropdown-divider">
-                </li>
-                <li>
-                    <form method="POST" action="{{ route('logout') }}">
-                        @csrf
-                        <button type="submit" class="dropdown-item rounded text-danger">
-                            <i class="bi bi-box-arrow-right me-2"></i> Keluar
-                        </button>
-                    </form>
-                </li>
-            </ul>
+        <!-- Dropdown Menu -->
+        <div id="userDropdownMenu" class="hidden absolute right-0 mt-2 w-48 bg-white rounded-xl shadow-lg border border-slate-100 py-1 z-50">
+            <div class="px-4 py-2 border-b border-slate-100 md:hidden">
+                <div class="font-semibold text-sm text-slate-800">{{ $user?->name ?? 'Pengguna' }}</div>
+                <div class="text-xs text-slate-500 truncate">{{ $user?->email ?? '' }}</div>
+            </div>
+            <a href="{{ route('profile.edit') }}" class="flex items-center px-4 py-2 text-sm text-slate-700 hover:bg-slate-50 transition">
+                <i class="bi bi-person text-slate-400 mr-2.5"></i> Profil Saya
+            </a>
+            <hr class="my-1 border-slate-100">
+            <form action="{{ route('logout') }}" method="POST">
+                @csrf
+                <button type="submit" class="w-full text-left flex items-center px-4 py-2 text-sm text-rose-600 hover:bg-rose-50 transition">
+                    <i class="bi bi-box-arrow-right mr-2.5"></i> Keluar
+                </button>
+            </form>
         </div>
     </div>
 </header>
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const btn = document.getElementById('userMenuBtn');
+        const menu = document.getElementById('userDropdownMenu');
+
+        if (btn && menu) {
+            btn.addEventListener('click', function(e) {
+                e.stopPropagation();
+                menu.classList.toggle('hidden');
+            });
+
+            document.addEventListener('click', function(e) {
+                if (!btn.contains(e.target) && !menu.contains(e.target)) {
+                    menu.classList.add('hidden');
+                }
+            });
+        }
+    });
+</script>
