@@ -4,191 +4,165 @@
 @section('page-title', 'Dashboard Admin Sekolah')
 
 @section('content')
-<!-- Header Salam / Welcome Banner -->
-<div class="row mb-4">
-    <div class="col-12">
-        <div class="card border-0 shadow-sm bg-primary text-white overflow-hidden">
-            <div class="card-body p-4 position-relative">
-                <div class="row align-items-center">
-                    <div class="col-md-8">
-                        <h4 class="fw-bold mb-1">Selamat Datang Kembali, {{ Auth::user()->name }}! 👋</h4>
-                        <p class="mb-0 opacity-75">
-                            Kelola data master sekolah, pengguna, dan pemantauan sistem penilaian dari panel kontrol ini.
-                        </p>
-                    </div>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+<div class="space-y-6">
 
-<!-- Cards Statistik Utama -->
-<div class="row g-3 mb-4">
-    <!-- Card Total Siswa -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between p-3">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Siswa</span>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($totalSiswa) }}</h3>
-                </div>
-                <div class="bg-primary-subtle text-primary p-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                    <i class="bi bi-people-fill fs-3"></i>
-                </div>
-            </div>
+    <!-- Header Salam / Welcome Banner -->
+    <div class="bg-blue-600 rounded-xl shadow-sm text-white overflow-hidden relative">
+        <div class="absolute top-0 right-0 w-64 h-full bg-gradient-to-l from-white/10 to-transparent"></div>
+        <div class="p-6 md:p-8 relative z-10">
+            <h4 class="text-2xl font-bold mb-2">Selamat Datang Kembali, {{ Auth::user()->name }}! 👋</h4>
+            <p class="text-blue-100 text-sm md:text-base max-w-2xl">
+                Kelola data master sekolah, pengguna, dan pemantauan sistem penilaian dari panel kontrol ini.
+            </p>
         </div>
     </div>
 
-    <!-- Card Total Guru -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between p-3">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Total Guru</span>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($totalGuru) }}</h3>
-                </div>
-                <div class="bg-success-subtle text-success p-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                    <i class="bi bi-person-badge-fill fs-3"></i>
-                </div>
-            </div>
-        </div>
+    <!-- Cards Statistik Utama -->
+    <div class="grid grid-cols-1 sm:grid-cols-2 xl:grid-cols-4 gap-5">
+        <x-stat-card label="Total Siswa" :value="number_format($totalSiswa)" icon="bi bi-people-fill" color="blue" />
+        <x-stat-card label="Total Guru" :value="number_format($totalGuru)" icon="bi bi-person-badge-fill" color="emerald" />
+        <x-stat-card label="Rombel / Kelas" :value="number_format($totalRombel)" icon="bi bi-door-open-fill" color="amber" />
+        <x-stat-card label="Akun Pengguna" :value="number_format($totalUser)" icon="bi bi-shield-lock-fill" color="cyan" />
     </div>
 
-    <!-- Card Total Rombel -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between p-3">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Rombel / Kelas</span>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($totalRombel) }}</h3>
-                </div>
-                <div class="bg-warning-subtle text-warning p-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                    <i class="bi bi-door-open-fill fs-3"></i>
-                </div>
-            </div>
-        </div>
-    </div>
+    <!-- Layout Grid: Tabel (Kiri) & Sidebar (Kanan) -->
+    <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 items-start">
 
-    <!-- Card Total Akun -->
-    <div class="col-12 col-sm-6 col-xl-3">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-body d-flex align-items-center justify-content-between p-3">
-                <div>
-                    <span class="text-muted small fw-semibold text-uppercase d-block mb-1">Akun Pengguna</span>
-                    <h3 class="fw-bold mb-0 text-dark">{{ number_format($totalUser) }}</h3>
-                </div>
-                <div class="bg-info-subtle text-info p-3 rounded-3 d-flex align-items-center justify-content-center" style="width: 52px; height: 52px;">
-                    <i class="bi bi-shield-lock-fill fs-3"></i>
-                </div>
-            </div>
-        </div>
-    </div>
-</div>
+        <!-- Tabel Akun Pengguna Terbaru (Span 2 kolom) -->
+        <div class="lg:col-span-2">
+            <x-card title="Pengguna Terbaru Terdaftar" icon="bi bi-person-plus-fill">
+                <!-- Slot Action: Tombol di sudut kanan atas header -->
+                <x-slot:action>
+                    <a href="#" class="text-sm bg-white border border-slate-300 text-slate-600 px-3 py-1.5 rounded-lg hover:bg-slate-50 font-medium transition">
+                        Lihat Semua
+                    </a>
+                </x-slot:action>
 
-<div class="row g-4">
-    <!-- Tabel Akun Pengguna Terbaru -->
-    <div class="col-12 col-lg-8">
-        <div class="card border-0 shadow-sm h-100">
-            <div class="card-header bg-white py-3 d-flex align-items-center justify-content-between border-bottom-0">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-person-plus-fill me-2 text-primary"></i>Pengguna Terbaru Terdaftar</h6>
-                <a href="#" class="btn btn-sm btn-light border text-secondary fw-semibold">Lihat Semua</a>
-            </div>
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light text-muted small">
-                        <tr>
-                            <th class="ps-3">Nama</th>
-                            <th>Email</th>
-                            <th>Role Access</th>
-                            <th>Tanggal Buat</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse ($latestUsers as $user)
-                        <tr>
-                            <td class="ps-3">
-                                <div class="d-flex align-items-center gap-2">
-                                    <div class="rounded-circle bg-light border d-flex align-items-center justify-content-center fw-bold text-secondary" style="width: 32px; height: 32px; font-size: 0.8rem;">
-                                        {{ strtoupper(substr($user->name, 0, 1)) }}
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left border-collapse">
+                        <thead class="bg-slate-50/50 text-slate-500 text-xs uppercase">
+                            <tr>
+                                <th class="px-6 py-3 font-medium">Nama</th>
+                                <th class="px-6 py-3 font-medium">Email</th>
+                                <th class="px-6 py-3 font-medium">Role Access</th>
+                                <th class="px-6 py-3 font-medium">Tanggal Buat</th>
+                            </tr>
+                        </thead>
+                        <tbody class="text-sm divide-y divide-slate-100">
+                            @forelse ($latestUsers as $user)
+                            <tr class="hover:bg-slate-50/50 transition">
+                                <td class="px-6 py-3">
+                                    <div class="flex items-center gap-3">
+                                        <div class="w-8 h-8 rounded-full bg-slate-100 border border-slate-200 flex items-center justify-center text-xs font-bold text-slate-600">
+                                            {{ strtoupper(substr($user->name, 0, 1)) }}
+                                        </div>
+                                        <span class="font-semibold text-slate-800">{{ $user->name }}</span>
                                     </div>
-                                    <span class="fw-semibold text-dark">{{ $user->name }}</span>
-                                </div>
-                            </td>
-                            <td class="text-muted small">{{ $user->email }}</td>
-                            <td>
-                                <span class="badge bg-secondary-subtle text-secondary border">
-                                    {{ ucfirst(str_replace('_', ' ', $user->role->value ?? $user->role)) }}
-                                </span>
-                            </td>
-                            <td class="text-muted small">{{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}</td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="4" class="text-center py-4 text-muted">Belum ada pengguna terdaftar.</td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                </td>
+                                <td class="px-6 py-3 text-slate-500">{{ $user->email }}</td>
+                                <td class="px-6 py-3">
+                                    <!-- Logika warna badge dinamis menggunakan match() bawaan PHP 8 -->
+                                    @php
+                                    $roleValue = $user->role->value ?? $user->role;
+                                    $badgeColor = match($roleValue) {
+                                    'admin_sekolah' => 'red',
+                                    'guru' => 'emerald',
+                                    'siswa' => 'blue',
+                                    'orang_tua' => 'amber',
+                                    'kepala_sekolah' => 'cyan',
+                                    default => 'slate',
+                                    };
+                                    @endphp
+
+                                    <x-badge :color="$badgeColor">
+                                        {{ ucfirst(str_replace('_', ' ', $roleValue)) }}
+                                    </x-badge>
+                                </td>
+                                <td class="px-6 py-3 text-slate-500">
+                                    {{ $user->created_at ? $user->created_at->format('d M Y') : '-' }}
+                                </td>
+                            </tr>
+                            @empty
+                            <tr>
+                                <td colspan="4" class="px-6 py-8 text-center text-slate-500">
+                                    Belum ada pengguna terdaftar.
+                                </td>
+                            </tr>
+                            @endforelse
+                        </tbody>
+                    </table>
+                </div>
+            </x-card>
+        </div>
+
+        <!-- Sidebar / Kolom Kanan -->
+        <div class="space-y-6">
+
+            <!-- Card Distribusi Role -->
+            <x-card title="Distribusi Role Akun" icon="bi bi-pie-chart-fill">
+                <div class="p-2">
+                    <ul class="divide-y divide-slate-50">
+                        <li class="flex justify-between items-center px-4 py-3">
+                            <span class="text-sm text-slate-600 flex items-center gap-2">
+                                <i class="bi bi-shield-check text-red-500"></i> Admin Sekolah
+                            </span>
+                            <span class="bg-red-50 text-red-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">{{ $roleCounts['admin_sekolah'] ?? 0 }}</span>
+                        </li>
+                        <li class="flex justify-between items-center px-4 py-3">
+                            <span class="text-sm text-slate-600 flex items-center gap-2">
+                                <i class="bi bi-person-badge text-emerald-500"></i> Guru
+                            </span>
+                            <span class="bg-emerald-50 text-emerald-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">{{ $roleCounts['guru'] ?? 0 }}</span>
+                        </li>
+                        <li class="flex justify-between items-center px-4 py-3">
+                            <span class="text-sm text-slate-600 flex items-center gap-2">
+                                <i class="bi bi-people text-blue-500"></i> Siswa
+                            </span>
+                            <span class="bg-blue-50 text-blue-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">{{ $roleCounts['siswa'] ?? 0 }}</span>
+                        </li>
+                        <li class="flex justify-between items-center px-4 py-3">
+                            <span class="text-sm text-slate-600 flex items-center gap-2">
+                                <i class="bi bi-heart text-amber-500"></i> Orang Tua
+                            </span>
+                            <span class="bg-amber-50 text-amber-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">{{ $roleCounts['orang_tua'] ?? 0 }}</span>
+                        </li>
+                        <li class="flex justify-between items-center px-4 py-3">
+                            <span class="text-sm text-slate-600 flex items-center gap-2">
+                                <i class="bi bi-award text-cyan-500"></i> Kepala Sekolah
+                            </span>
+                            <span class="bg-cyan-50 text-cyan-600 px-2.5 py-0.5 rounded-full text-xs font-semibold">{{ $roleCounts['kepala_sekolah'] ?? 0 }}</span>
+                        </li>
+                    </ul>
+                </div>
+            </x-card>
+
+            <!-- Card Pintasan Akses Cepat -->
+            <x-card title="Akses Cepat" icon="bi bi-lightning-charge-fill">
+                <div class="p-4 flex flex-col gap-3">
+                    <x-quick-link :href="Route::has('admin.siswa.create') ? route('admin.siswa.create') : '#'" icon="bi bi-person-plus-fill" iconColor="text-blue-500">
+                        Tambah Data Siswa
+                    </x-quick-link>
+
+                    <x-quick-link :href="Route::has('admin.guru.create') ? route('admin.guru.create') : '#'" icon="bi bi-person-badge-fill" iconColor="text-emerald-500">
+                        Tambah Data Guru
+                    </x-quick-link>
+
+                    <x-quick-link :href="Route::has('admin.mapel.create') ? route('admin.mapel.create') : '#'" icon="bi bi-book-half" iconColor="text-cyan-500">
+                        Tambah Data Mata Pelajaran
+                    </x-quick-link>
+
+                    <x-quick-link :href="Route::has('admin.kelas.create') ? route('admin.kelas.create') : '#'" icon="bi bi-house-add-fill" iconColor="text-slate-400">
+                        Tambah Data Kelas
+                    </x-quick-link>
+
+                    <x-quick-link href="#" icon="bi bi-calendar3" iconColor="text-slate-400">
+                        Kelola Tahun Akademik
+                    </x-quick-link>
+                </div>
+            </x-card>
+
         </div>
     </div>
 
-    <!-- Ringkasan Role Akun & Pintasan Akses -->
-    <div class="col-12 col-lg-4">
-        <!-- Card Distribusi Role -->
-        <div class="card border-0 shadow-sm mb-4">
-            <div class="card-header bg-white py-3 border-bottom-0">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-pie-chart-fill me-2 text-primary"></i>Distribusi Role Akun</h6>
-            </div>
-            <div class="card-body pt-0">
-                <ul class="list-group list-group-flush border-top-0">
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
-                        <span class="small text-muted"><i class="bi bi-shield-check text-danger me-2"></i>Admin Sekolah</span>
-                        <span class="badge bg-danger-subtle text-danger rounded-pill">{{ $roleCounts['admin_sekolah'] }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
-                        <span class="small text-muted"><i class="bi bi-person-badge text-success me-2"></i>Guru</span>
-                        <span class="badge bg-success-subtle text-success rounded-pill">{{ $roleCounts['guru'] }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
-                        <span class="small text-muted"><i class="bi bi-people text-primary me-2"></i>Siswa</span>
-                        <span class="badge bg-primary-subtle text-primary rounded-pill">{{ $roleCounts['siswa'] }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
-                        <span class="small text-muted"><i class="bi bi-heart text-warning me-2"></i>Orang Tua</span>
-                        <span class="badge bg-warning-subtle text-warning rounded-pill">{{ $roleCounts['orang_tua'] }}</span>
-                    </li>
-                    <li class="list-group-item d-flex justify-content-between align-items-center px-0 py-2">
-                        <span class="small text-muted"><i class="bi bi-award text-info me-2"></i>Kepala Sekolah</span>
-                        <span class="badge bg-info-subtle text-info rounded-pill">{{ $roleCounts['kepala_sekolah'] }}</span>
-                    </li>
-                </ul>
-            </div>
-        </div>
-
-        <!-- Card Pintasan Akses Cepat -->
-        <div class="card border-0 shadow-sm">
-            <div class="card-header bg-white py-3 border-bottom-0">
-                <h6 class="fw-bold mb-0 text-dark"><i class="bi bi-lightning-charge-fill me-2 text-warning"></i>Akses Cepat</h6>
-            </div>
-            <div class="card-body pt-0 d-grid gap-2">
-                <a href="{{ route('admin.siswa.create') }}" class="btn btn-outline-primary btn-sm text-start py-2">
-                    <i class="bi bi-person-plus-fill me-2"></i>Tambah Data Siswa
-                </a>
-                <a href="{{ route('admin.guru.create') }}" class="btn btn-outline-success btn-sm text-start py-2">
-                    <i class="bi bi-person-badge-fill me-2"></i>Tambah Data Guru
-                </a>
-                <a href="{{ route('admin.mapel.create') }}" class="btn btn-outline-info btn-sm text-start py-2">
-                    <i class="bi bi-book-half me-2"></i>Tambah Data Mata Pelajaran
-                </a>
-                <a href="{{ route('admin.kelas.create') }}" class="btn btn-outline-secondary btn-sm text-start py-2">
-                    <i class="bi bi-house-add-fill me-2"></i>Tambah Data Kelas
-                </a>
-                <a href="#" class="btn btn-outline-secondary btn-sm text-start py-2">
-                    <i class="bi bi-calendar3 me-2"></i>Kelola Tahun Akademik & Semester
-                </a>
-            </div>
-        </div>
-    </div>
 </div>
 @endsection

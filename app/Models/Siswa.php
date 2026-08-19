@@ -20,7 +20,6 @@ class Siswa extends Model
         'user_id',
         'orang_tua_id',
         'rombel_id',
-        'kelas_id',
         'nis',
         'nisn',
         'nama_lengkap',
@@ -76,11 +75,6 @@ class Siswa extends Model
     public function rapor(): HasMany
     {
         return $this->hasMany(Rapor::class, 'siswa_id');
-    }
-
-    public function kelas(): BelongsTo
-    {
-        return $this->belongsTo(Kelas::class, 'kelas_id');
     }
 
     public function nilaiEkskul(): HasMany

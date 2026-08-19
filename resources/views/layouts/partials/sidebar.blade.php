@@ -37,6 +37,7 @@ default => route('login'),
             </ul>
         </div>
 
+        @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::GURU], true))
         <!-- Akademik & Penilaian -->
         <div>
             <div class="px-6 pb-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Akademik & Penilaian</div>
@@ -122,6 +123,7 @@ default => route('login'),
                 @endif
             </ul>
         </div>
+        @endif
 
         {{-- Pengaturan & Sistem --}}
         @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::SUPER_ADMIN], true))

@@ -19,6 +19,8 @@
     <!-- SweetAlert2 CDN -->
     <script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
 
+    <script defer src="https://cdn.jsdelivr.net/npm/alpinejs@3.x.x/dist/cdn.min.js"></script>
+
     @vite(['resources/css/app.css', 'resources/js/app.js'])
 
     @stack('styles')
@@ -35,29 +37,17 @@
             <!-- Topbar Header -->
             @include('layouts.partials.navbar')
 
-            <!-- Main Content Body -->
+            <!-- Main Content Body (Sudah diperbaiki) -->
             <main class="p-6 flex-1">
-                {{-- Flash Message Success --}}
-                @session('success')
-                <div role="alert" class="bg-emerald-50 border-l-4 border-emerald-500 text-emerald-700 p-4 rounded-r-lg shadow-xs flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-2">
-                        <i class="bi bi-check-circle-fill text-emerald-500 text-lg"></i>
-                        <span class="text-sm font-medium">{{ $value }}</span>
-                    </div>
-                    <button onclick="this.parentElement.remove()" class="text-emerald-500 hover:text-emerald-700 font-bold text-lg leading-none">&times;</button>
-                </div>
-                @endsession
 
-                {{-- Flash Message Error --}}
-                @session('error')
-                <div role="alert" class="bg-rose-50 border-l-4 border-rose-500 text-rose-700 p-4 rounded-r-lg shadow-xs flex justify-between items-center mb-6">
-                    <div class="flex items-center gap-2">
-                        <i class="bi bi-exclamation-triangle-fill text-rose-500 text-lg"></i>
-                        <span class="text-sm font-medium">{{ $value }}</span>
-                    </div>
-                    <button onclick="this.parentElement.remove()" class="text-rose-500 hover:text-rose-700 font-bold text-lg leading-none">&times;</button>
-                </div>
-                @endsession
+                <!-- Global Flash Message -->
+                @if (session('success'))
+                <x-alert type="success" :message="session('success')" />
+                @endif
+
+                @if (session('error'))
+                <x-alert type="error" :message="session('error')" />
+                @endif
 
                 {{-- Dynamic Page Content --}}
                 @yield('content')
@@ -79,15 +69,9 @@
                 });
             }
 
-            // 2. Auto-close Alerts after 4s
-            const alertElements = document.querySelectorAll('[role="alert"]');
-            alertElements.forEach(function(alert) {
-                setTimeout(function() {
-                    alert.remove();
-                }, 4000);
-            });
+            // (Skrip JS Auto-close Alert telah dihapus karena sudah ditangani Alpine.js di dalam komponen)
 
-            // 3. Global SweetAlert Confirm Delete Delegation
+            // 2. Global SweetAlert Confirm Delete Delegation
             document.addEventListener('submit', function(e) {
                 const form = e.target;
                 if (form && form.classList.contains('delete-form')) {

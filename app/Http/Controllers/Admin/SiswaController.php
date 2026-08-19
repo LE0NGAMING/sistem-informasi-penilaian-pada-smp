@@ -4,7 +4,7 @@ namespace App\Http\Controllers\Admin;
 
 use App\Enums\RoleEnum;
 use App\Http\Controllers\Controller;
-use App\Models\Kelas;
+use App\Models\Rombel;
 use App\Models\Siswa;
 use App\Models\User;
 use Illuminate\Http\RedirectResponse;
@@ -21,7 +21,8 @@ class SiswaController extends Controller
      */
     public function index(Request $request): View
     {
-        $siswas = Siswa::with(['kelas', 'user'])
+        // 1. Ganti 'kelas' menjadi 'rombel' atau 'rombel.kelas' (nested eager loading)
+        $siswas = Siswa::with(['rombel.kelas', 'user'])
             ->when($request->filled('search'), function ($query) use ($request) {
                 $search = $request->search;
                 $query->where(function ($q) use ($search) {
@@ -42,9 +43,11 @@ class SiswaController extends Controller
      */
     public function create(): View
     {
-        $kelases = Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
+        // 2. Ambil data rombel beserta relasi kelasnya
+        // Sesuaikan 'nama_rombel' dengan nama kolom yang ada di tabel rombels
+        $rombels = Rombel::with('kelas')->get();
 
-        return view('admin.siswa.create', compact('kelases'));
+        return view('admin.siswa.create', compact('rombels')); // Ubah passing variable
     }
 
     /**
@@ -57,11 +60,11 @@ class SiswaController extends Controller
             'nisn'          => ['nullable', 'string', 'size:10', 'unique:siswa,nisn'],
             'nama_lengkap'  => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:L,P'],
-            'kelas_id'      => ['required', 'exists:kelas,id'],
             'tempat_lahir'  => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['nullable', 'date'],
             'agama'         => ['nullable', 'string', 'max:20'],
             'alamat'        => ['nullable', 'string'],
+            'rombel_id'     => ['nullable', 'exists:rombels,id'], // 3. Tambahkan validasi rombel_id
             'email'         => ['required', 'email', 'max:255', 'unique:users,email'],
             'password'      => ['nullable', 'string', 'min:8'],
         ]);
@@ -78,7 +81,6 @@ class SiswaController extends Controller
             // 2. Buat Profile Siswa
             Siswa::create([
                 'user_id'       => $user->id,
-                'kelas_id'      => $validated['kelas_id'],
                 'nis'           => $validated['nis'],
                 'nisn'          => $validated['nisn'] ?? null,
                 'nama_lengkap'  => $validated['nama_lengkap'],
@@ -87,6 +89,7 @@ class SiswaController extends Controller
                 'tanggal_lahir' => $validated['tanggal_lahir'] ?? null,
                 'agama'         => $validated['agama'] ?? null,
                 'alamat'        => $validated['alamat'] ?? null,
+                'rombel_id'     => $validated['rombel_id'] ?? null, // 4. Simpan rombel_id
             ]);
         });
 
@@ -100,7 +103,8 @@ class SiswaController extends Controller
      */
     public function show(Siswa $siswa): View
     {
-        $siswa->load('kelas', 'user');
+        // 5. Sesuaikan relasi load
+        $siswa->load('rombel.kelas', 'user');
 
         return view('admin.siswa.show', compact('siswa'));
     }
@@ -110,10 +114,11 @@ class SiswaController extends Controller
      */
     public function edit(Siswa $siswa): View
     {
-        $kelases = Kelas::select('id', 'nama_kelas')->orderBy('nama_kelas')->get();
-        $siswa->load('user', 'kelas');
+        // 6. Gunakan data rombel untuk form edit
+        $rombels = Rombel::with('kelas')->get();
+        $siswa->load('user', 'rombel');
 
-        return view('admin.siswa.edit', compact('siswa', 'kelases'));
+        return view('admin.siswa.edit', compact('siswa', 'rombels'));
     }
 
     /**
@@ -126,7 +131,7 @@ class SiswaController extends Controller
             'nisn'          => ['nullable', 'string', 'size:10', Rule::unique('siswa', 'nisn')->ignore($siswa->id)],
             'nama_lengkap'  => ['required', 'string', 'max:255'],
             'jenis_kelamin' => ['required', 'in:L,P'],
-            'kelas_id'      => ['required', 'exists:kelas,id'],
+            'rombel_id'     => ['nullable', 'exists:rombels,id'], // 7. Ganti kelas_id jadi rombel_id
             'tempat_lahir'  => ['nullable', 'string', 'max:100'],
             'tanggal_lahir' => ['nullable', 'date'],
             'agama'         => ['nullable', 'string', 'max:20'],
@@ -152,7 +157,7 @@ class SiswaController extends Controller
 
             // 2. Update Data Siswa
             $siswa->update([
-                'kelas_id'      => $validated['kelas_id'],
+                'rombel_id'     => $validated['rombel_id'] ?? null, // 8. Update menggunakan rombel_id
                 'nis'           => $validated['nis'],
                 'nisn'          => $validated['nisn'] ?? null,
                 'nama_lengkap'  => $validated['nama_lengkap'],
