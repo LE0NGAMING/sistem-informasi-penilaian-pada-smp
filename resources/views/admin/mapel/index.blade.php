@@ -1,185 +1,141 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
+<div class="space-y-6">
     {{-- Header --}}
-    <div class="d-flex justify-content-between align-items-center mb-4">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h3 class="fw-bold mb-1">Daftar Data Mata Pelajaran</h3>
+            <h1 class="text-2xl font-bold text-slate-800">Daftar Mata Pelajaran</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Kelola data mata pelajaran yang ada di sekolah.</p>
         </div>
         @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
-        <a href="{{ route('admin.mapel.create') }}" class="btn btn-primary px-3">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Data
+        <a href="{{ route('admin.mapel.create') }}"
+            class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="bi bi-plus-lg"></i> Tambah Data
         </a>
         @endif
     </div>
 
-    {{-- Alert Notifikasi --}}
-    @session('success')
-    <div class="alert alert-success alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-check-circle-fill me-2"></i>{{ $value }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endsession
-
-    @session('error')
-    <div class="alert alert-danger alert-dismissible fade show border-0 shadow-sm mb-4" role="alert">
-        <i class="bi bi-exclamation-triangle-fill me-2"></i>{{ $value }}
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
-    </div>
-    @endsession
-
     {{-- Filter & Pencarian --}}
-    <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-3">
-            <form action="{{ route('admin.mapel.index') }}" method="GET" class="row g-2 align-items-center">
-                {{-- Input Pencarian Kode / Nama --}}
-                <div class="col-md-5 col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white text-muted border-end-0">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" name="search" class="form-control border-start-0 ps-0"
-                            placeholder="Cari Kode atau Nama Mapel..."
-                            value="{{ request('search') }}">
-                    </div>
+    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+        <form action="{{ route('admin.mapel.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+            {{-- Input Pencarian Kode / Nama --}}
+            <div class="relative flex-grow max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="bi bi-search text-slate-400"></i>
                 </div>
+                <input type="text" name="search"
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    placeholder="Cari Kode atau Nama Mapel..."
+                    value="{{ request('search') }}">
+            </div>
 
-                {{-- Dropdown Kelompok Mapel --}}
-                <div class="col-md-4 col-lg-3">
-                    <select name="kelompok" class="form-select">
-                        <option value="">-- Semua Kelompok --</option>
-                        <option value="Kelompok A" @selected(request('kelompok')==='Kelompok A' )>Kelompok A (Umum)</option>
-                        <option value="Kelompok B" @selected(request('kelompok')==='Kelompok B' )>Kelompok B (Muatan Lokal/Seni)</option>
-                        <option value="Kelompok C" @selected(request('kelompok')==='Kelompok C' )>Kelompok C (Peminatan)</option>
-                    </select>
-                </div>
+            {{-- Dropdown Kelompok Mapel --}}
+            <div class="w-full sm:w-auto">
+                <select name="kelompok" class="w-full px-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500">
+                    <option value="">-- Semua Kelompok --</option>
+                    <option value="Kelompok A" @selected(request('kelompok')==='Kelompok A' )>Kelompok A (Umum)</option>
+                    <option value="Kelompok B" @selected(request('kelompok')==='Kelompok B' )>Kelompok B (Muatan Lokal/Seni)</option>
+                    <option value="Kelompok C" @selected(request('kelompok')==='Kelompok C' )>Kelompok C (Peminatan)</option>
+                </select>
+            </div>
 
-                {{-- Tombol Aksi --}}
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary px-3">Cari</button>
-                    @if(request()->hasAny(['search', 'kelompok']))
-                    <a href="{{ route('admin.mapel.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
-                        Reset
-                    </a>
-                    @endif
-                </div>
-            </form>
-        </div>
+            {{-- Tombol Aksi --}}
+            <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg transition">
+                    Cari
+                </button>
+                @if(request()->hasAny(['search', 'kelompok']))
+                <a href="{{ route('admin.mapel.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition" title="Reset Filter">
+                    Reset
+                </a>
+                @endif
+            </div>
+        </form>
     </div>
 
     {{-- Tabel Data Mapel --}}
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-4" style="width: 50px;">No</th>
-                            <th style="width: 150px;">Kode Mapel</th>
-                            <th>Nama Mata Pelajaran</th>
-                            <th>Kelompok</th>
-                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
-                            <th class="text-center pe-4" style="width: 150px;">Aksi</th>
+    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+                <thead class="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 w-16">No</th>
+                        <th scope="col" class="px-6 py-4 w-40">Kode Mapel</th>
+                        <th scope="col" class="px-6 py-4">Nama Mata Pelajaran</th>
+                        <th scope="col" class="px-6 py-4">Kelompok</th>
+                        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                        <th scope="col" class="px-6 py-4 text-center w-32">Aksi</th>
+                        @endif
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($mapels as $mapel)
+                    <tr class="hover:bg-slate-50 transition duration-150">
+                        <td class="px-6 py-4 text-slate-500 font-medium">
+                            {{ $mapels->firstItem() + $loop->index }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-slate-100 text-slate-700 font-mono border border-slate-200">
+                                {{ $mapel->kode_mapel }}
+                            </span>
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-semibold text-slate-800">{{ $mapel->nama_mapel }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($mapel->kelompok)
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                {{ $mapel->kelompok }}
+                            </span>
+                            @else
+                            <span class="text-slate-400 text-xs italic">-</span>
                             @endif
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($mapels as $mapel)
-                        <tr>
-                            <td class="ps-4 fw-semibold text-muted">
-                                {{ $mapels->firstItem() + $loop->index }}
-                            </td>
-                            <td>
-                                <span class="badge bg-secondary-subtle text-secondary px-2 py-1 font-monospace fs-7">
-                                    {{ $mapel->kode_mapel }}
-                                </span>
-                            </td>
-                            <td>
-                                <span class="fw-bold text-dark">{{ $mapel->nama_mapel }}</span>
-                            </td>
-                            <td>
-                                @if($mapel->kelompok)
-                                <span class="badge bg-info-subtle text-info px-2 py-1 fs-7">
-                                    {{ $mapel->kelompok }}
-                                </span>
-                                @else
-                                <span class="text-muted small">-</span>
-                                @endif
-                            </td>
-                            @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
-                            <td class="text-center pe-4">
-                                <div class="d-flex justify-content-center gap-1">
-                                    <a href="{{ route('admin.mapel.edit', $mapel) }}" class="btn btn-sm btn-outline-warning">
-                                        <i class="bi bi-pencil-square"></i>
-                                    </a>
-                                    <form action="{{ route('admin.mapel.destroy', $mapel) }}" method="POST" class="delete-form inline">
-                                        @csrf
-                                        @method('DELETE')
-                                        <button type="submit" class="btn btn-sm btn-outline-danger">
-                                            <i class="bi bi-trash"></i>
-                                        </button>
-                                    </form>
+                        </td>
+                        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-2">
+                                <a href="{{ route('admin.mapel.edit', $mapel) }}"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-amber-600 hover:bg-amber-50 hover:text-amber-700 transition"
+                                    title="Edit">
+                                    <i class="bi bi-pencil-square text-lg"></i>
+                                </a>
+                                <form action="{{ route('admin.mapel.destroy', $mapel) }}" method="POST" class="delete-form inline">
+                                    @csrf
+                                    @method('DELETE')
+                                    <button type="submit"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 hover:text-red-700 transition"
+                                        title="Hapus">
+                                        <i class="bi bi-trash text-lg"></i>
+                                    </button>
+                                </form>
+                            </div>
+                        </td>
+                        @endif
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="{{ auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH ? 5 : 4 }}" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-3 border border-slate-100">
+                                    <i class="bi bi-journal-bookmark text-2xl"></i>
                                 </div>
-                            </td>
-                            @endif
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="{{ auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH ? 5 : 4 }}" class="text-center py-5 text-muted">
-                                <i class="bi bi-journal-bookmark fs-1 d-block mb-2"></i>
-                                Belum ada data mata pelajaran yang ditambahkan.
-                            </td>
-                        </tr>
-                        @endforelse
-                    </tbody>
-                </table>
-            </div>
+                                <h3 class="text-slate-800 font-medium mb-1">Belum ada data</h3>
+                                <p class="text-slate-500 text-sm">Tidak ada mata pelajaran yang ditambahkan.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
 
         {{-- Pagination --}}
         @if($mapels->hasPages())
-        <div class="card-footer bg-white border-0 py-3">
+        <div class="p-4 border-t border-slate-200">
             {{ $mapels->withQueryString()->links() }}
         </div>
         @endif
     </div>
 </div>
-
-<!-- {{-- SweetAlert2 Script --}}
-@push('scripts')
-<script>
-    document.addEventListener('DOMContentLoaded', function() {
-        document.querySelectorAll('.btn-delete').forEach(button => {
-            button.addEventListener('click', function(e) {
-                e.preventDefault();
-                const form = this.closest('form');
-                const nama = this.getAttribute('data-nama') || 'mata pelajaran ini';
-
-                Swal.fire({
-                    title: 'Apakah Anda yakin?',
-                    html: `Mata pelajaran <strong>${nama}</strong> akan dihapus permanen!`,
-                    icon: 'warning',
-                    showCancelButton: true,
-                    confirmButtonColor: '#dc3545',
-                    cancelButtonColor: '#6c757d',
-                    confirmButtonText: '<i class="bi bi-trash-fill me-1"></i> Ya, Hapus!',
-                    cancelButtonText: 'Batal',
-                    reverseButtons: true,
-                    customClass: {
-                        popup: 'rounded-4 border-0 shadow-lg',
-                        confirmButton: 'btn btn-danger px-4 py-2 me-2',
-                        cancelButton: 'btn btn-secondary px-4 py-2'
-                    },
-                    buttonsStyling: false
-                }).then((result) => {
-                    if (result.isConfirmed) {
-                        form.submit();
-                    }
-                });
-            });
-        });
-    });
-</script>
-@endpush -->
 @endsection

@@ -1,61 +1,72 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    {{-- Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h3 class="fw-bold mb-1">Tambah Mata Pelajaran</h3>
-            <p class="text-muted small mb-0">Isi formulir berikut untuk menambahkan mata pelajaran baru.</p>
+            <h1 class="text-2xl font-bold text-slate-800">Tambah Mata Pelajaran</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Isi formulir berikut untuk menambahkan mata pelajaran baru.</p>
         </div>
-        <a href="{{ route('admin.mapel.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Kembali
+        <a href="{{ route('admin.mapel.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body p-4">
+    {{-- Form Card --}}
+    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-6 sm:p-8">
             <form action="{{ route('admin.mapel.store') }}" method="POST">
                 @csrf
 
-                <div class="row g-3">
-                    {{-- Kode Mapel --}}
-                    <div class="col-md-6">
-                        <label for="kode_mapel" class="form-label fw-semibold">Kode Mapel <span class="text-danger">*</span></label>
-                        <input type="text" name="kode_mapel" id="kode_mapel" class="form-control @error('kode_mapel') is-invalid @enderror" value="{{ old('kode_mapel') }}" placeholder="Contoh: MAT, IPA, BIN, BIG" required>
-                        @error('kode_mapel')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                <div class="space-y-6">
+                    {{-- Baris 1: Kode & Nama Mapel --}}
+                    <div class="flex flex-col md:flex-row gap-6">
+                        <div class="w-full md:w-1/2">
+                            <label for="kode_mapel" class="block text-sm font-medium text-slate-700 mb-2">Kode Mapel <span class="text-red-500">*</span></label>
+                            <input type="text" name="kode_mapel" id="kode_mapel"
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('kode_mapel') border-red-500 focus:border-red-500 focus:ring-red-500/20 @enderror"
+                                value="{{ old('kode_mapel') }}" placeholder="Contoh: MAT, IPA, BIN, BIG" required>
+                            @error('kode_mapel') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+
+                        <div class="w-full md:w-1/2">
+                            <label for="nama_mapel" class="block text-sm font-medium text-slate-700 mb-2">Nama Mata Pelajaran <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_mapel" id="nama_mapel"
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('nama_mapel') border-red-500 focus:border-red-500 focus:ring-red-500/20 @enderror"
+                                value="{{ old('nama_mapel') }}" placeholder="Contoh: Matematika" required>
+                            @error('nama_mapel') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+                        </div>
                     </div>
 
-                    {{-- Nama Mapel --}}
-                    <div class="col-md-6">
-                        <label for="nama_mapel" class="form-label fw-semibold">Nama Mata Pelajaran <span class="text-danger">*</span></label>
-                        <input type="text" name="nama_mapel" id="nama_mapel" class="form-control @error('nama_mapel') is-invalid @enderror" value="{{ old('nama_mapel') }}" placeholder="Contoh: Matematika" required>
-                        @error('nama_mapel')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    {{-- Kelompok Mapel --}}
-                    <div class="col-md-12">
-                        <label for="kelompok" class="form-label fw-semibold">Kelompok / Kategori</label>
-                        <select name="kelompok" id="kelompok" class="form-select @error('kelompok') is-invalid @enderror">
+                    {{-- Baris 2: Kelompok Mapel --}}
+                    <div class="w-full">
+                        <label for="kelompok" class="block text-sm font-medium text-slate-700 mb-2">Kelompok / Kategori</label>
+                        <select name="kelompok" id="kelompok"
+                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('kelompok') border-red-500 @enderror">
                             <option value="">-- Pilih Kelompok (Opsional) --</option>
                             <option value="Kelompok A (Wajib)" {{ old('kelompok') == 'Kelompok A (Wajib)' ? 'selected' : '' }}>Kelompok A (Wajib)</option>
-                            <option value="Kelompok B" {{ old('kelompok') == 'Kelompok B' ? 'selected' : '' }}>Kelompok B</option>
-                            <option value="Muatan Lokal" {{ old('kelompok') == 'Muatan Lokal' ? 'selected' : '' }}>Muatan Lokal</option>
+                            <option value="Kelompok B" {{ old('kelompok') == 'Kelompok B' ? 'selected' : '' }}>Kelompok B (Muatan Lokal/Seni)</option>
+                            <option value="Kelompok C" {{ old('kelompok') == 'Kelompok C' ? 'selected' : '' }}>Kelompok C (Peminatan)</option>
+                            <option value="Muatan Lokal" {{ old('kelompok') == 'Muatan Lokal' ? 'selected' : '' }}>Muatan Lokal Tambahan</option>
                         </select>
-                        @error('kelompok')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        @error('kelompok') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <hr class="my-4">
+                <hr class="my-8 border-slate-200">
 
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('admin.mapel.index') }}" class="btn btn-light border px-4">Batal</a>
-                    <button type="submit" class="btn btn-primary px-4">Simpan Mapel</button>
+                {{-- Spasi dan Garis Pemisah yang Rapi --}}
+                <div class="mt-8 flex items-center justify-end gap-3">
+                    <a href="{{ route('admin.mapel.index') }}"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition">
+                        Batal
+                    </a>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+                        Simpan Mapel
+                    </button>
                 </div>
             </form>
         </div>
