@@ -1,97 +1,138 @@
 @extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    {{-- Header --}}
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h3 class="fw-bold mb-1">Data Rombongan Belajar (Rombel)</h3>
-            <!-- <p class="text-muted small mb-0">Kelola kelompok kelas dan penugasan wali kelas.</p> -->
+            <h1 class="text-2xl font-bold text-slate-800">Data Rombongan Belajar (Rombel)</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Kelola kelompok kelas dan penugasan wali kelas.</p>
         </div>
-        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH )
-        <a href="{{ route('admin.rombel.create') }}" class="btn btn-primary btn-sm">
-            <i class="bi bi-plus-lg me-1"></i> Tambah Rombel
+        @if(auth()->user()->role === \App\Enums\RoleEnum::ADMIN_SEKOLAH)
+        <a href="{{ route('admin.rombel.create') }}"
+            class="inline-flex items-center gap-2 px-4 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="bi bi-plus-lg"></i> Tambah Rombel
         </a>
         @endif
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3 mb-4">
-        <div class="card-body p-3">
-            <form action="{{ route('admin.rombel.index') }}" method="GET" class="row g-2 align-items-center">
-                {{-- Input Pencarian Rombel / Nama Wali Kelas --}}
-                <div class="col-md-5 col-lg-4">
-                    <div class="input-group">
-                        <span class="input-group-text bg-white text-muted border-end-0">
-                            <i class="bi bi-search"></i>
-                        </span>
-                        <input type="text" name="search" class="form-control border-start-0 ps-0"
-                            placeholder="Cari Rombel atau Nama Wali Kelas..."
-                            value="{{ request('search') }}">
-                    </div>
-                </div>
-
-                {{-- Tombol Aksi --}}
-                <div class="col-auto">
-                    <button type="submit" class="btn btn-primary px-3">Cari</button>
-                    @if(request('search'))
-                    <a href="{{ route('admin.rombel.index') }}" class="btn btn-outline-secondary px-3" title="Reset Filter">
-                        Reset
-                    </a>
-                    @endif
-                </div>
-            </form>
+    {{-- Alert Notifikasi --}}
+    @session('success')
+    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm flex items-center justify-between">
+        <div class="flex gap-3 items-center">
+            <i class="bi bi-check-circle-fill text-emerald-500 text-lg"></i>
+            <p class="text-sm font-medium text-emerald-800">{{ $value }}</p>
         </div>
+        <button type="button" class="text-emerald-600 hover:text-emerald-800 transition" onclick="this.parentElement.remove()">
+            <i class="bi bi-x-lg"></i>
+        </button>
+    </div>
+    @endsession
+
+    {{-- Filter & Pencarian --}}
+    <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
+        <form action="{{ route('admin.rombel.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">
+            <div class="relative flex-grow max-w-md">
+                <div class="absolute inset-y-0 left-0 pl-3 flex items-center pointer-events-none">
+                    <i class="bi bi-search text-slate-400"></i>
+                </div>
+                <input type="text" name="search"
+                    class="w-full pl-10 pr-4 py-2 bg-slate-50 border border-slate-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500"
+                    placeholder="Cari Rombel atau Nama Wali Kelas..."
+                    value="{{ request('search') }}">
+            </div>
+            <div class="flex items-center gap-2">
+                <button type="submit" class="px-4 py-2 bg-slate-800 hover:bg-slate-900 text-white text-sm font-medium rounded-lg transition">
+                    Cari
+                </button>
+                @if(request('search'))
+                <a href="{{ route('admin.rombel.index') }}" class="px-4 py-2 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition" title="Reset Filter">
+                    Reset
+                </a>
+                @endif
+            </div>
+        </form>
     </div>
 
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body p-0">
-            <div class="table-responsive">
-                <table class="table table-hover align-middle mb-0">
-                    <thead class="table-light">
-                        <tr>
-                            <th class="ps-3" style="width: 50px;">No</th>
-                            <th>Nama Rombel</th>
-                            <th>Tingkat</th>
-                            <th>Wali Kelas</th>
-                            <th class="text-end pe-3">Aksi</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        @forelse($rombels as $index => $rombel)
-                        <tr>
-                            <td class="ps-3">{{ $rombels->firstItem() + $index }}</td>
-                            <td><strong class="text-primary">{{ $rombel->nama_rombel }}</strong></td>
-                            <td>
-                                @if($rombel->tingkat)
-                                <span class="badge bg-primary">Kelas {{ $rombel->tingkat }}</span>
-                                @else
-                                <span class="text-muted">-</span>
-                                @endif
-                            </td>
-                            <td>{{ $rombel->waliKelas->nama_lengkap ?? 'Belum ditentukan' }}</td>
-                            <td class="text-end pe-3">
-                                {{-- Tombol Detail untuk Plotting Siswa --}}
-                                <a href="{{ route('admin.rombel.show', $rombel->id) }}" class="btn btn-sm btn-info text-white me-1" title="Detail / Plotting Siswa">
-                                    <i class="bi bi-people-fill"></i>
+    {{-- Tabel Rombel --}}
+    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="overflow-x-auto">
+            <table class="w-full text-left text-sm text-slate-600">
+                <thead class="bg-slate-50 text-slate-700 font-medium border-b border-slate-200">
+                    <tr>
+                        <th scope="col" class="px-6 py-4 w-16">No</th>
+                        <th scope="col" class="px-6 py-4">Nama Rombel</th>
+                        <th scope="col" class="px-6 py-4">Tingkat</th>
+                        <th scope="col" class="px-6 py-4">Wali Kelas</th>
+                        <th scope="col" class="px-6 py-4 text-center w-36">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody class="divide-y divide-slate-100">
+                    @forelse($rombels as $index => $rombel)
+                    <tr class="hover:bg-slate-50 transition duration-150">
+                        <td class="px-6 py-4 text-slate-500 font-medium">
+                            {{ $rombels->firstItem() + $index }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <span class="font-semibold text-slate-800">{{ $rombel->nama_rombel }}</span>
+                        </td>
+                        <td class="px-6 py-4">
+                            @if($rombel->tingkat)
+                            <span class="inline-flex items-center px-2.5 py-1 rounded-md text-xs font-medium bg-indigo-50 text-indigo-700 border border-indigo-100">
+                                Kelas {{ $rombel->tingkat }}
+                            </span>
+                            @else
+                            <span class="text-slate-400 text-xs italic">-</span>
+                            @endif
+                        </td>
+                        <td class="px-6 py-4 text-slate-700">
+                            {{ $rombel->waliKelas->nama_lengkap ?? 'Belum ditentukan' }}
+                        </td>
+                        <td class="px-6 py-4">
+                            <div class="flex items-center justify-center gap-1.5">
+                                <a href="{{ route('admin.rombel.show', $rombel->id) }}"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-cyan-600 hover:bg-cyan-50 transition"
+                                    title="Detail / Plotting Siswa">
+                                    <i class="bi bi-people-fill text-lg"></i>
                                 </a>
-                                <a href="{{ route('admin.rombel.edit', $rombel->id) }}" class="btn btn-sm btn-warning text-white me-1">
-                                    <i class="bi bi-pencil-square"></i>
+                                <a href="{{ route('admin.rombel.edit', $rombel->id) }}"
+                                    class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-amber-600 hover:bg-amber-50 transition"
+                                    title="Edit">
+                                    <i class="bi bi-pencil-square text-lg"></i>
                                 </a>
                                 <form action="{{ route('admin.rombel.destroy', $rombel->id) }}" method="POST" class="delete-form inline">
                                     @csrf
                                     @method('DELETE')
-                                    <button type="submit" class="btn btn-sm btn-danger"><i class="bi bi-trash"></i></button>
+                                    <button type="submit"
+                                        class="inline-flex items-center justify-center w-8 h-8 rounded-lg text-red-500 hover:bg-red-50 transition"
+                                        title="Hapus">
+                                        <i class="bi bi-trash text-lg"></i>
+                                    </button>
                                 </form>
-                            </td>
-                        </tr>
-                        @empty
-                        <tr>
-                            <td colspan="5" class="text-center py-4 text-muted">Belum ada data rombel.</td>
-                        </tr>
-                        @endempty
-                    </tbody>
-                </table>
-            </div>
+                            </div>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="5" class="px-6 py-12 text-center">
+                            <div class="flex flex-col items-center justify-center">
+                                <div class="w-16 h-16 bg-slate-50 text-slate-400 rounded-full flex items-center justify-center mb-3 border border-slate-100">
+                                    <i class="bi bi-collection text-2xl"></i>
+                                </div>
+                                <h3 class="text-slate-800 font-medium mb-1">Belum ada data</h3>
+                                <p class="text-slate-500 text-sm">Tidak ada rombongan belajar yang ditemukan.</p>
+                            </div>
+                        </td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
         </div>
+        @if($rombels->hasPages())
+        <div class="p-4 border-t border-slate-200">
+            {{ $rombels->withQueryString()->links() }}
+        </div>
+        @endif
     </div>
 </div>
 @endsection

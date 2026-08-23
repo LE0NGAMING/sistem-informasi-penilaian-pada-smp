@@ -1,84 +1,83 @@
-@extends('layouts.app') {{-- Sesuaikan nama layout Anda --}}
+@extends('layouts.app')
 
 @section('content')
-<div class="container-fluid px-4 py-3">
-    <div class="d-flex justify-content-between align-items-center mb-4">
+<div class="space-y-6">
+    <div class="flex flex-col sm:flex-row sm:items-center justify-between gap-4">
         <div>
-            <h3 class="fw-bold mb-1">Tambah Rombongan Belajar (Rombel)</h3>
-            <p class="text-muted small mb-0">Buat rombel baru dan tetapkan tingkat kelas serta wali kelasnya.</p>
+            <h1 class="text-2xl font-bold text-slate-800">Tambah Rombongan Belajar</h1>
+            <p class="text-sm text-slate-500 mt-0.5">Buat rombel baru dan tetapkan tingkat kelas serta wali kelasnya.</p>
         </div>
-        <a href="{{ route('admin.rombel.index') }}" class="btn btn-outline-secondary btn-sm">
-            <i class="bi bi-arrow-left me-1"></i> Kembali
+        <a href="{{ route('admin.rombel.index') }}"
+            class="inline-flex items-center gap-2 px-4 py-2 bg-white border border-slate-200 hover:bg-slate-50 text-slate-700 text-sm font-medium rounded-lg shadow-sm transition">
+            <i class="bi bi-arrow-left"></i> Kembali
         </a>
     </div>
 
-    {{-- Alert Error Validasi Global --}}
     @if ($errors->any())
-    <div class="alert alert-danger alert-dismissible fade show" role="alert">
-        <strong>Terjadi kesalahan!</strong> Mohon periksa kembali inputan Anda.
-        <ul class="mb-0 mt-2">
+    <div class="p-4 bg-red-50 border border-red-200 rounded-xl shadow-sm">
+        <div class="flex gap-3 items-center mb-2">
+            <i class="bi bi-exclamation-triangle-fill text-red-500 text-lg"></i>
+            <p class="text-sm font-semibold text-red-800">Terjadi kesalahan validasi!</p>
+        </div>
+        <ul class="list-disc list-inside text-sm text-red-700 space-y-1">
             @foreach ($errors->all() as $error)
             <li>{{ $error }}</li>
             @endforeach
         </ul>
-        <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
     </div>
     @endif
 
-    <div class="card border-0 shadow-sm rounded-3">
-        <div class="card-body p-4">
+    <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm overflow-hidden">
+        <div class="p-6 sm:p-8">
             <form action="{{ route('admin.rombel.store') }}" method="POST">
                 @csrf
-                {{-- Tahun Ajaran --}}
-                <div class="mb-3">
-                    <label for="tahun_ajaran_id" class="form-label fw-semibold">Tahun Ajaran <span class="text-danger">*</span></label>
-                    <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="form-select @error('tahun_ajaran_id') is-invalid @enderror" required>
-                        <option value="">-- Pilih Tahun Ajaran --</option>
-                        @foreach($tahunAjarans as $ta)
-                        <option value="{{ $ta->id }}">
-                            {{ $ta->tahun }} {{-- Menggunakan $ta->tahun sesuai kolom di database --}}
-                        </option>
-                        @endforeach
-                    </select>
-                    @error('tahun_ajaran_id')
-                    <div class="invalid-feedback">{{ $message }}</div>
-                    @enderror
-                </div>
-                <div class="row g-3">
-                    {{-- Nama Rombel --}}
-                    <div class="col-md-6">
-                        <label for="nama_rombel" class="form-label fw-semibold">Nama Rombel <span class="text-danger">*</span></label>
-                        <input type="text"
-                            name="nama_rombel"
-                            id="nama_rombel"
-                            class="form-control text-uppercase @error('nama_rombel') is-invalid @enderror"
-                            value="{{ old('nama_rombel') }}"
-                            oninput="this.value = this.value.toUpperCase()"
-                            placeholder="Contoh: 8-A"
-                            required>
-                        @error('nama_rombel')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
-                    </div>
-
-                    {{-- Dropdown Tingkat Kelas --}}
-                    <div class="col-md-6 mb-3">
-                        <label for="tingkat" class="form-label fw-semibold">Tingkat Kelas <span class="text-danger">*</span></label>
-                        <select name="tingkat" id="tingkat" class="form-select @error('tingkat') is-invalid @enderror" required>
-                            <option value="">-- Pilih Tingkat Kelas --</option>
-                            <option value="7" {{ old('tingkat') == '7' ? 'selected' : '' }}>Kelas 7</option>
-                            <option value="8" {{ old('tingkat') == '8' ? 'selected' : '' }}>Kelas 8</option>
-                            <option value="9" {{ old('tingkat') == '9' ? 'selected' : '' }}>Kelas 9</option>
+                <div class="space-y-6">
+                    {{-- Tahun Ajaran --}}
+                    <div>
+                        <label for="tahun_ajaran_id" class="block text-sm font-medium text-slate-700 mb-2">Tahun Ajaran <span class="text-red-500">*</span></label>
+                        <select name="tahun_ajaran_id" id="tahun_ajaran_id"
+                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('tahun_ajaran_id') border-red-500 @enderror" required>
+                            <option value="">-- Pilih Tahun Ajaran --</option>
+                            @foreach($tahunAjarans as $ta)
+                            <option value="{{ $ta->id }}" {{ old('tahun_ajaran_id') == $ta->id ? 'selected' : '' }}>
+                                {{ $ta->tahun }}
+                            </option>
+                            @endforeach
                         </select>
-                        @error('tingkat')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        @error('tahun_ajaran_id') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
                     </div>
 
-                    {{-- Dropdown Wali Kelas --}}
-                    <div class="col-md-12">
-                        <label for="wali_kelas_id" class="form-label fw-semibold">Wali Kelas</label>
-                        <select name="wali_kelas_id" id="wali_kelas_id" class="form-select @error('wali_kelas_id') is-invalid @enderror">
+                    <div class="flex flex-col md:flex-row gap-6">
+                        {{-- Nama Rombel --}}
+                        <div class="w-full md:w-1/2">
+                            <label for="nama_rombel" class="block text-sm font-medium text-slate-700 mb-2">Nama Rombel <span class="text-red-500">*</span></label>
+                            <input type="text" name="nama_rombel" id="nama_rombel"
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-800 uppercase focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('nama_rombel') border-red-500 @enderror"
+                                value="{{ old('nama_rombel') }}"
+                                oninput="this.value = this.value.toUpperCase()"
+                                placeholder="Contoh: 8-A" required>
+                            @error('nama_rombel') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+
+                        {{-- Tingkat Kelas --}}
+                        <div class="w-full md:w-1/2">
+                            <label for="tingkat" class="block text-sm font-medium text-slate-700 mb-2">Tingkat Kelas <span class="text-red-500">*</span></label>
+                            <select name="tingkat" id="tingkat"
+                                class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('tingkat') border-red-500 @enderror" required>
+                                <option value="">-- Pilih Tingkat Kelas --</option>
+                                <option value="7" {{ old('tingkat') == '7' ? 'selected' : '' }}>Kelas 7</option>
+                                <option value="8" {{ old('tingkat') == '8' ? 'selected' : '' }}>Kelas 8</option>
+                                <option value="9" {{ old('tingkat') == '9' ? 'selected' : '' }}>Kelas 9</option>
+                            </select>
+                            @error('tingkat') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
+                        </div>
+                    </div>
+
+                    {{-- Wali Kelas --}}
+                    <div>
+                        <label for="wali_kelas_id" class="block text-sm font-medium text-slate-700 mb-2">Wali Kelas</label>
+                        <select name="wali_kelas_id" id="wali_kelas_id"
+                            class="w-full px-4 py-2.5 bg-slate-50 border border-slate-200 rounded-lg text-sm text-slate-700 focus:outline-none focus:ring-2 focus:ring-indigo-500/20 focus:border-indigo-500 transition @error('wali_kelas_id') border-red-500 @enderror">
                             <option value="">-- Pilih Wali Kelas (Opsional) --</option>
                             @foreach($gurus as $guru)
                             <option value="{{ $guru->id }}" {{ old('wali_kelas_id') == $guru->id ? 'selected' : '' }}>
@@ -86,18 +85,20 @@
                             </option>
                             @endforeach
                         </select>
-                        <div class="form-text">Bisa dikosongkan terlebih dahulu jika wali kelas belum ditentukan.</div>
-                        @error('wali_kelas_id')
-                        <div class="invalid-feedback">{{ $message }}</div>
-                        @enderror
+                        <p class="text-slate-400 text-xs mt-1.5">Bisa dikosongkan terlebih dahulu jika wali kelas belum ditentukan.</p>
+                        @error('wali_kelas_id') <p class="text-red-500 text-xs mt-1.5">{{ $message }}</p> @enderror
                     </div>
                 </div>
 
-                <hr class="my-4">
-
-                <div class="d-flex justify-content-end gap-2">
-                    <a href="{{ route('admin.rombel.index') }}" class="btn btn-light border px-4">Batal</a>
-                    <button type="submit" class="btn btn-primary px-4">Simpan Rombel</button>
+                <div class="mt-8 flex items-center justify-end gap-3">
+                    <a href="{{ route('admin.rombel.index') }}"
+                        class="px-5 py-2.5 bg-slate-100 hover:bg-slate-200 text-slate-700 text-sm font-medium rounded-lg transition">
+                        Batal
+                    </a>
+                    <button type="submit"
+                        class="px-5 py-2.5 bg-indigo-600 hover:bg-indigo-700 text-white text-sm font-medium rounded-lg shadow-sm transition">
+                        Simpan Rombel
+                    </button>
                 </div>
             </form>
         </div>

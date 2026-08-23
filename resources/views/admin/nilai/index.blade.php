@@ -4,207 +4,228 @@
 @section('page-title', 'Input Penilaian Siswa')
 
 @section('content')
-<div class="container-fluid px-0">
+<div class="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-6">
 
     {{-- Filter Card --}}
-    <div class="card border-0 shadow-sm rounded-4 mb-4">
-        <div class="card-body p-4">
-            <h6 class="fw-bold mb-3 text-dark">
-                <i class="bi bi-filter me-2 text-primary"></i>Filter Penilaian
-            </h6>
-            <form action="{{ route('admin.nilai.store') }}" method="GET" class="row g-3 align-items-end">
-                <div class="col-md-3">
-                    <label for="rombel_id" class="form-label small fw-semibold text-secondary">Rombongan Belajar (Rombel)</label>
-                    <select name="rombel_id" id="rombel_id" class="form-select rounded-3" required>
-                        <option value="">-- Pilih Rombel --</option>
-                        @foreach($rombelList as $rombel)
-                        <option value="{{ $rombel->id }}" @selected($rombelId==$rombel->id)>
-                            {{ $rombel->nama_rombel }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 p-6 mb-6">
+        <h2 class="text-base font-bold text-gray-800 mb-4 flex items-center gap-2">
+            <svg class="w-5 h-5 text-indigo-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M3 4a1 1 0 011-1h16a1 1 0 011 1v2.586a1 1 0 01-.293.707l-6.414 6.414a1 1 0 00-.293.707V17l-4 4v-6.586a1 1 0 00-.293-.707L3.293 7.293A1 1 0 013 6.586V4z"></path>
+            </svg>
+            Filter Penilaian
+        </h2>
+        <form action="{{ route('admin.nilai.index') }}" method="GET" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-12 gap-4 items-end">
+            <div class="lg:col-span-3">
+                <label for="rombel_id" class="block text-xs font-semibold text-gray-600 mb-1">Rombel</label>
+                <select name="rombel_id" id="rombel_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" required>
+                    <option value="">-- Pilih Rombel --</option>
+                    @foreach($rombelList as $rombel)
+                    <option value="{{ $rombel->id }}" @selected($rombelId==$rombel->id)>
+                        {{ $rombel->nama_rombel }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    <label for="mapel_id" class="form-label small fw-semibold text-secondary">Mata Pelajaran</label>
-                    <select name="mapel_id" id="mapel_id" class="form-select rounded-3" required>
-                        <option value="">-- Pilih Mapel --</option>
-                        @foreach($mapelList as $mapel)
-                        <option value="{{ $mapel->id }}" @selected($mapelId==$mapel->id)>
-                            {{ $mapel->nama_mapel }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="lg:col-span-3">
+                <label for="mapel_id" class="block text-xs font-semibold text-gray-600 mb-1">Mata Pelajaran</label>
+                <select name="mapel_id" id="mapel_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" required>
+                    <option value="">-- Pilih Mapel --</option>
+                    @foreach($mapelList as $mapel)
+                    <option value="{{ $mapel->id }}" @selected($mapelId==$mapel->id)>
+                        {{ $mapel->nama_mapel }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    <label for="semester_id" class="form-label small fw-semibold text-secondary">Semester</label>
-                    <select name="semester_id" id="semester_id" class="form-select rounded-3" required>
-                        <option value="">-- Pilih Semester --</option>
-                        @foreach($semesterList as $semester)
-                        <option value="{{ $semester->value }}" @selected($semesterId==$semester->value)>
-                            {{ $semester->label() }}
-                        </option>
-                        @endforeach
-                    </select>
-                </div>
+            <div class="lg:col-span-2">
+                <label for="semester_id" class="block text-xs font-semibold text-gray-600 mb-1">Semester</label>
+                <select name="semester_id" id="semester_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" required>
+                    <option value="">-- Semester --</option>
+                    @foreach($semesterList as $semester)
+                    <option value="{{ $semester->value }}" @selected($semesterId==$semester->value)>
+                        {{ $semester->label() }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
 
-                <div class="col-md-3">
-                    <button type="submit" class="btn btn-primary w-100 rounded-3">
-                        <i class="bi bi-search me-1"></i> Tampilkan
-                    </button>
-                </div>
-            </form>
-        </div>
+            <div class="lg:col-span-2">
+                <label for="tahun_ajaran_id" class="block text-xs font-semibold text-gray-600 mb-1">Tahun Ajaran</label>
+                <select name="tahun_ajaran_id" id="tahun_ajaran_id" class="w-full rounded-lg border border-gray-300 px-3 py-2 text-sm text-gray-800 focus:outline-none focus:ring-2 focus:ring-indigo-500 bg-white" required>
+                    <option value="">-- Tahun Ajaran --</option>
+                    @foreach($tahunAjaranList as $ta)
+                    <option value="{{ $ta->id }}" @selected($tahunAjaranId==$ta->id)>
+                        {{ $ta->tahun }}
+                    </option>
+                    @endforeach
+                </select>
+            </div>
+
+            <div class="lg:col-span-2">
+                <button type="submit" class="w-full inline-flex justify-center items-center gap-1.5 bg-indigo-600 hover:bg-indigo-700 text-white font-medium text-sm px-4 py-2 rounded-lg transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M21 21l-6-6m2-5a7 7 0 11-14 0 7 7 0 0114 0z"></path>
+                    </svg>
+                    Tampilkan
+                </button>
+            </div>
+        </form>
     </div>
 
     {{-- Form Input Nilai --}}
-    @if($rombelId && $mapelId && $semesterId)
+    @if($rombelId && $mapelId && $semesterId && $tahunAjaranId)
     <form id="formPenilaian" action="{{ route('admin.nilai.store') }}" method="POST">
         @csrf
         <input type="hidden" name="rombel_id" value="{{ $rombelId }}">
         <input type="hidden" name="mapel_id" value="{{ $mapelId }}">
         <input type="hidden" name="semester_id" value="{{ $semesterId }}">
+        <input type="hidden" name="tahun_ajaran_id" value="{{ $tahunAjaranId }}">
 
-        <div class="card border-0 shadow-sm rounded-4">
-            <div class="card-header bg-white py-3 px-4 border-bottom-0 d-flex align-items-center justify-content-between flex-wrap gap-2">
+        <div class="bg-white rounded-2xl shadow-sm border border-gray-100 overflow-hidden mb-6">
+            <div class="p-6 border-b border-gray-100 flex flex-col md:flex-row md:items-center justify-between gap-4">
                 <div>
-                    <h6 class="fw-bold mb-0 text-dark">Daftar Penilaian Siswa</h6>
-                    <small class="text-muted">Bobot: Harian (15%), Tugas (15%), Quiz (10%), UTS (20%), UAS (20%), Praktik (20%) | KKM: 75</small>
+                    <h3 class="text-base font-bold text-gray-800">Daftar Penilaian Siswa</h3>
+                    <p class="text-xs text-gray-500 mt-0.5">Bobot: Harian (15%), Tugas (15%), Quiz (10%), UTS (20%), UAS (20%), Praktik (20%) | KKM: 75</p>
                 </div>
 
-                <div class="d-flex align-items-center gap-2 flex-wrap">
-                    <a href="{{ route('admin.rekap.index', ['rombel_id' => $rombelId, 'mapel_id' => $mapelId, 'semester_id' => $semesterId]) }}"
-                        class="btn btn-outline-primary btn-sm rounded-3 fw-semibold btn-rekap-guard">
-                        <i class="bi bi-file-earmark-text me-1"></i> Lihat Rekap Rombel
+                <div>
+                    <a href="{{ route('admin.rekap.index', ['rombel_id' => $rombelId, 'mapel_id' => $mapelId, 'semester_id' => $semesterId, 'tahun_ajaran_id' => $tahunAjaranId]) }}"
+                        class="inline-flex items-center gap-1.5 px-3.5 py-2 border border-indigo-600 text-indigo-600 hover:bg-indigo-50 font-semibold text-xs rounded-lg transition btn-rekap-guard">
+                        <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+                        </svg>
+                        Lihat Rekap Rombel
                     </a>
                 </div>
             </div>
 
-            <div class="card-body p-0">
-                <div class="table-responsive">
-                    <table class="table table-hover align-middle mb-0" style="min-width: 1150px;">
-                        <thead class="table-light">
-                            <tr>
-                                <th class="ps-4" style="width: 50px;">No</th>
-                                <th style="width: 200px;">Nama Siswa</th>
-                                <th style="width: 80px;">Harian</th>
-                                <th style="width: 80px;">Tugas</th>
-                                <th style="width: 80px;">Quiz</th>
-                                <th style="width: 80px;">UTS</th>
-                                <th style="width: 80px;">UAS</th>
-                                <th style="width: 80px;">Praktik</th>
-                                <th style="width: 80px;">Akhir</th>
-                                <th style="width: 80px;">Predikat</th>
-                                <th style="width: 90px;" class="text-center">Status</th>
-                                <th class="pe-4" style="width: 160px;">Catatan</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            @forelse($siswaList as $siswa)
-                            @php
-                            $nilai = $siswa->penilaian->first();
-                            $hasNilai = !is_null($nilai?->is_remedial);
-                            @endphp
-                            <tr class="row-nilai" data-siswa-id="{{ $siswa->id }}">
-                                <td class="ps-4 fw-semibold text-secondary">{{ $loop->iteration }}</td>
-                                <td>
-                                    <div class="fw-semibold text-dark">{{ $siswa->nama_lengkap }}</div>
-                                    <small class="text-muted">NISN: {{ $siswa->nisn ?? '-' }}</small>
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][nilai_harian]"
-                                        value="{{ old("nilai.{$siswa->id}.nilai_harian", $nilai?->nilai_harian) }}"
-                                        class="form-control form-control-sm input-score input-harian" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][tugas]"
-                                        value="{{ old("nilai.{$siswa->id}.tugas", $nilai?->tugas) }}"
-                                        class="form-control form-control-sm input-score input-tugas" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][quiz]"
-                                        value="{{ old("nilai.{$siswa->id}.quiz", $nilai?->quiz) }}"
-                                        class="form-control form-control-sm input-score input-quiz" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][uts]"
-                                        value="{{ old("nilai.{$siswa->id}.uts", $nilai?->uts) }}"
-                                        class="form-control form-control-sm input-score input-uts" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][uas]"
-                                        value="{{ old("nilai.{$siswa->id}.uas", $nilai?->uas) }}"
-                                        class="form-control form-control-sm input-score input-uas" placeholder="0">
-                                </td>
-                                <td>
-                                    <input type="number" step="0.01" min="0" max="100"
-                                        name="nilai[{{ $siswa->id }}][praktik]"
-                                        value="{{ old("nilai.{$siswa->id}.praktik", $nilai?->praktik) }}"
-                                        class="form-control form-control-sm input-score input-praktik" placeholder="0">
-                                </td>
-                                <td>
-                                    <span class="fw-bold fs-6 text-primary score-akhir">
-                                        {{ $nilai?->nilai_akhir ?? '-' }}
-                                    </span>
-                                </td>
-                                <td>
-                                    <span @class([ 'badge badge-predikat' , 'bg-success'=> $nilai?->predikat === 'A',
-                                        'bg-info text-dark' => $nilai?->predikat === 'B',
-                                        'bg-warning text-dark' => $nilai?->predikat === 'C',
-                                        'bg-danger' => $nilai?->predikat === 'D',
-                                        'bg-secondary' => !$nilai?->predikat,
-                                        ])>
-                                        {{ $nilai?->predikat ?? '-' }}
-                                    </span>
-                                </td>
-                                <td class="text-center">
-                                    <span @class([ 'badge badge-remedial' , 'bg-danger'=> $hasNilai && $nilai->is_remedial,
-                                        'bg-success' => $hasNilai && !$nilai->is_remedial,
-                                        'bg-secondary' => !$hasNilai,
-                                        ])>
-                                        {{ $hasNilai ? ($nilai->is_remedial ? 'Remedial' : 'Tuntas') : '-' }}
-                                    </span>
-                                </td>
-                                <td class="pe-4">
-                                    <input type="text"
-                                        name="nilai[{{ $siswa->id }}][catatan]"
-                                        value="{{ old("nilai.{$siswa->id}.catatan", $nilai?->catatan) }}"
-                                        class="form-control form-control-sm" placeholder="Catatan...">
-                                </td>
-                            </tr>
-                            @empty
-                            <tr>
-                                <td colspan="12" class="text-center py-4 text-muted">
-                                    <i class="bi bi-person-x fs-3 d-block mb-2"></i>
-                                    Tidak ada data siswa ditemukan untuk rombel ini.
-                                </td>
-                            </tr>
-                            @endforelse
-                        </tbody>
-                    </table>
-                </div>
+            <div class="overflow-x-auto">
+                <table class="w-full text-left border-collapse" style="min-width: 1150px;">
+                    <thead>
+                        <tr class="bg-gray-50 text-gray-600 uppercase text-[10px] font-semibold tracking-wider border-b border-gray-100">
+                            <th class="py-3 px-4 pl-6 w-12">No</th>
+                            <th class="py-3 px-4 w-48">Nama Siswa</th>
+                            <th class="py-3 px-2 w-20">Harian</th>
+                            <th class="py-3 px-2 w-20">Tugas</th>
+                            <th class="py-3 px-2 w-20">Quiz</th>
+                            <th class="py-3 px-2 w-20">UTS</th>
+                            <th class="py-3 px-2 w-20">UAS</th>
+                            <th class="py-3 px-2 w-20">Praktik</th>
+                            <th class="py-3 px-2 w-20">Akhir</th>
+                            <th class="py-3 px-2 w-20">Predikat</th>
+                            <th class="py-3 px-2 w-24 text-center">Status</th>
+                            <th class="py-3 px-4 pr-6 w-40">Catatan</th>
+                        </tr>
+                    </thead>
+                    <tbody class="divide-y divide-gray-100 text-sm text-gray-700">
+                        @forelse($siswaList as $siswa)
+                        @php
+                        $nilai = $siswa->penilaian->first();
+                        $hasNilai = !is_null($nilai?->is_remedial);
+                        @endphp
+                        <tr class="row-nilai hover:bg-gray-50/50 transition" data-siswa-id="{{ $siswa->id }}">
+                            <td class="py-3 px-4 pl-6 font-medium text-gray-500">{{ $loop->iteration }}</td>
+                            <td class="py-3 px-4">
+                                <div class="font-semibold text-gray-800">{{ $siswa->nama_lengkap }}</div>
+                                <div class="text-xs text-gray-400">NISN: {{ $siswa->nisn ?? '-' }}</div>
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][nilai_harian]"
+                                    value="{{ old("nilai.{$siswa->id}.nilai_harian", $nilai?->nilai_harian) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-harian" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][tugas]"
+                                    value="{{ old("nilai.{$siswa->id}.tugas", $nilai?->tugas) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-tugas" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][quiz]"
+                                    value="{{ old("nilai.{$siswa->id}.quiz", $nilai?->quiz) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-quiz" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][uts]"
+                                    value="{{ old("nilai.{$siswa->id}.uts", $nilai?->uts) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-uts" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][uas]"
+                                    value="{{ old("nilai.{$siswa->id}.uas", $nilai?->uas) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-uas" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2">
+                                <input type="number" step="0.01" min="0" max="100"
+                                    name="nilai[{{ $siswa->id }}][praktik]"
+                                    value="{{ old("nilai.{$siswa->id}.praktik", $nilai?->praktik) }}"
+                                    class="w-full text-center rounded-md border border-gray-300 px-2 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500 input-score input-praktik" placeholder="0">
+                            </td>
+                            <td class="py-3 px-2 font-bold text-indigo-600 score-akhir">
+                                {{ $nilai?->nilai_akhir ?? '-' }}
+                            </td>
+                            <td class="py-3 px-2">
+                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-predikat
+                                    @if($nilai?->predikat === 'A') bg-green-100 text-green-800
+                                    @elseif($nilai?->predikat === 'B') bg-blue-100 text-blue-800
+                                    @elseif($nilai?->predikat === 'C') bg-yellow-100 text-yellow-800
+                                    @elseif($nilai?->predikat === 'D') bg-red-100 text-red-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ $nilai?->predikat ?? '-' }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-2 text-center">
+                                <span class="inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-remedial
+                                    @if($hasNilai && $nilai->is_remedial) bg-red-100 text-red-800
+                                    @elseif($hasNilai && !$nilai->is_remedial) bg-green-100 text-green-800
+                                    @else bg-gray-100 text-gray-800 @endif">
+                                    {{ $hasNilai ? ($nilai->is_remedial ? 'Remedial' : 'Tuntas') : '-' }}
+                                </span>
+                            </td>
+                            <td class="py-3 px-4 pr-6">
+                                <input type="text"
+                                    name="nilai[{{ $siswa->id }}][catatan]"
+                                    value="{{ old("nilai.{$siswa->id}.catatan", $nilai?->catatan) }}"
+                                    class="w-full rounded-md border border-gray-300 px-3 py-1.5 text-sm focus:outline-none focus:ring-1 focus:ring-indigo-500" placeholder="Catatan...">
+                            </td>
+                        </tr>
+                        @empty
+                        <tr>
+                            <td colspan="12" class="text-center py-8 text-gray-400">
+                                <svg class="w-12 h-12 mx-auto mb-2 text-gray-300" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z"></path>
+                                </svg>
+                                Tidak ada data siswa ditemukan untuk rombel ini.
+                            </td>
+                        </tr>
+                        @endforelse
+                    </tbody>
+                </table>
             </div>
 
-            <div class="card-footer bg-white py-3 px-4 text-end border-top-0">
-                <button type="submit" class="btn btn-success px-4 rounded-3 fw-semibold">
-                    <i class="bi bi-check-lg me-1"></i> Simpan Penilaian
+            <div class="p-6 bg-gray-50 border-t border-gray-100 flex justify-end">
+                <button type="submit" class="inline-flex items-center gap-1.5 bg-green-600 hover:bg-green-700 text-white font-medium text-sm px-5 py-2.5 rounded-lg transition shadow-sm">
+                    <svg class="w-4 h-4" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M5 13l4 4L19 7"></path>
+                    </svg>
+                    Simpan Penilaian
                 </button>
             </div>
         </div>
     </form>
     @else
-    <div class="card border-0 shadow-sm rounded-4 text-center py-5">
-        <div class="card-body">
-            <i class="bi bi-file-earmark-text text-muted display-4"></i>
-            <h6 class="fw-bold mt-3 text-dark">Silakan Filter Terlebih Dahulu</h6>
-            <p class="text-muted small mb-0">Pilih Rombel, Mata Pelajaran, dan Semester di atas untuk menampilkan daftar siswa.</p>
-        </div>
+    <div class="bg-white rounded-2xl shadow-sm border border-gray-100 text-center py-12 px-6">
+        <svg class="w-12 h-12 mx-auto text-gray-300 mb-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M9 12h6m-6 4h6m2 5H7a2 2 0 01-2-2V5a2 2 0 012-2h5.586a1 1 0 01.707.293l5.414 5.414a1 1 0 01.293.707V19a2 2 0 01-2 2z"></path>
+        </svg>
+        <h3 class="text-base font-bold text-gray-800">Silakan Filter Terlebih Dahulu</h3>
+        <p class="text-xs text-gray-500 mt-1">Pilih Rombel, Mata Pelajaran, Semester, dan Tahun Ajaran di atas untuk menampilkan daftar siswa.</p>
     </div>
     @endif
 </div>
@@ -218,11 +239,9 @@
 
         let isFormDirty = false;
 
-        // 1. Unsaved Changes Guards
         formPenilaian.addEventListener('input', () => isFormDirty = true);
         formPenilaian.addEventListener('submit', () => isFormDirty = false);
 
-        // Peringatan jika merefresh atau menutup tab saat ada perubahan belum disimpan
         window.addEventListener('beforeunload', (e) => {
             if (isFormDirty) {
                 e.preventDefault();
@@ -230,7 +249,6 @@
             }
         });
 
-        // Peringatan khusus saat mengklik tombol navigasi internal (misal Rekap)
         document.querySelectorAll('.btn-rekap-guard').forEach(btn => {
             btn.addEventListener('click', (e) => {
                 if (isFormDirty) {
@@ -240,14 +258,12 @@
             });
         });
 
-        // 2. Calculation logic function
         const calculateRowScore = (row) => {
             const getVal = (selector) => {
                 const input = row.querySelector(selector);
                 if (!input || input.value === '') return null;
 
                 let val = parseFloat(input.value);
-                // Clamp value between 0 and 100 instantly for live calculation safety
                 if (val > 100) val = 100;
                 if (val < 0) val = 0;
                 return val;
@@ -271,9 +287,9 @@
             if (!hasInput) {
                 scoreAkhir.textContent = '-';
                 badgePredikat.textContent = '-';
-                badgePredikat.className = 'badge bg-secondary badge-predikat';
+                badgePredikat.className = 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-predikat bg-gray-100 text-gray-800';
                 badgeRemedial.textContent = '-';
-                badgeRemedial.className = 'badge bg-secondary badge-remedial';
+                badgeRemedial.className = 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-remedial bg-gray-100 text-gray-800';
                 return;
             }
 
@@ -287,32 +303,31 @@
             scoreAkhir.textContent = akhir.toFixed(2);
 
             let predikat = 'D';
-            let badgeClass = 'bg-danger';
+            let badgeClass = 'bg-red-100 text-red-800';
 
             if (akhir >= 90) {
                 predikat = 'A';
-                badgeClass = 'bg-success';
+                badgeClass = 'bg-green-100 text-green-800';
             } else if (akhir >= 80) {
                 predikat = 'B';
-                badgeClass = 'bg-info text-dark';
+                badgeClass = 'bg-blue-100 text-blue-800';
             } else if (akhir >= 75) {
                 predikat = 'C';
-                badgeClass = 'bg-warning text-dark';
+                badgeClass = 'bg-yellow-100 text-yellow-800';
             }
 
             badgePredikat.textContent = predikat;
-            badgePredikat.className = `badge ${badgeClass} badge-predikat`;
+            badgePredikat.className = `inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-predikat ${badgeClass}`;
 
             if (akhir < 75) {
                 badgeRemedial.textContent = 'Remedial';
-                badgeRemedial.className = 'badge bg-danger badge-remedial';
+                badgeRemedial.className = 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-remedial bg-red-100 text-red-800';
             } else {
                 badgeRemedial.textContent = 'Tuntas';
-                badgeRemedial.className = 'badge bg-success badge-remedial';
+                badgeRemedial.className = 'inline-flex px-2.5 py-0.5 rounded-full text-xs font-semibold badge-remedial bg-green-100 text-green-800';
             }
         };
 
-        // 3. Event Delegation for fast performance
         formPenilaian.addEventListener('input', (e) => {
             if (e.target.classList.contains('input-score')) {
                 const row = e.target.closest('.row-nilai');
