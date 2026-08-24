@@ -17,6 +17,13 @@ export default defineConfig({
         tailwindcss(),
     ],
     server: {
+        host: '127.0.0.1', // Memaksa penggunaan IPv4
+        port: 5173,
+        strictPort: true,
+        cors: true,
+        hmr: {
+            host: '127.0.0.1', // Memastikan browser menghubungi host yang benar
+        },
         watch: {
             ignored: ['**/storage/framework/views/**'],
         },

@@ -49,11 +49,13 @@
             vertical-align: top;
         }
 
+        /* Fixed Layout mencegah kolom melar saat teks deskripsi panjang */
         .grade-table,
         .sub-table {
             width: 100%;
             border-collapse: collapse;
             margin-bottom: 12px;
+            table-layout: fixed;
         }
 
         .grade-table th,
@@ -63,6 +65,9 @@
             border: 1px solid #000;
             padding: 5px 6px;
             font-size: 8.5pt;
+            word-wrap: break-word;
+            /* Mencegah overflow teks */
+            vertical-align: top;
         }
 
         .grade-table th,
@@ -70,6 +75,7 @@
             background-color: #F0F0F0;
             text-align: center;
             font-weight: bold;
+            vertical-align: middle;
         }
 
         .text-center {
@@ -86,10 +92,14 @@
             margin-bottom: 4px;
         }
 
+        .signature-container {
+            page-break-inside: avoid;
+            /* Mencegah area TTD terpisah halaman */
+            margin-top: 15px;
+        }
+
         .signature-table {
             width: 100%;
-            margin-top: 15px;
-            page-break-inside: avoid;
             font-size: 9pt;
         }
 
@@ -111,10 +121,10 @@
     <!-- Kop Sekolah -->
     <div class="header-kop">
         <h2>PEMERINTAH KOTA DKI JAKARTA<br>DINAS PENDIDIKAN<br>SMP NEGERI 110 JAKARTA</h2>
-        <p>Jl. Pendidikan No. 45, Bandung | Telp: (022) 1234567 | Website: smpn1digital.sch.id</p>
+        <p>Jl. Pendidikan No. 45, Jakarta Selatan | Telp: (021) 1234567 | Website: smpn110jakarta.sch.id</p>
     </div>
 
-    <h3 class="text-center" style="margin-bottom: 10px; font-size: 11pt;">LAPORAN HASIL BELAJAR SISWA (RAPOR)</h3>
+    <h3 class="text-center" style="margin-bottom: 10px; font-size: 11pt; text-transform: uppercase;">Laporan Hasil Belajar Siswa (Rapor)</h3>
 
     <!-- Identitas Siswa -->
     <table class="meta-table">
@@ -137,7 +147,7 @@
         <tr>
             <td>Sekolah</td>
             <td>:</td>
-            <td>SMPN 1 Digital</td>
+            <td>SMP Negeri 110 Jakarta</td>
             <td>Tahun Ajaran</td>
             <td>:</td>
             <td>{{ $rombel->tahunAjaran->tahun ?? '2025/2026' }}</td>
@@ -198,13 +208,13 @@
                 <td class="text-center">{{ $index + 1 }}</td>
                 <td>{{ $item->mapel?->nama_mapel ?? '-' }}</td>
                 <td class="text-center text-bold">
-                    {{ number_format($item->nilai_keterampilan ?? $item->nilai_praktik ?? $item->nilai_akhir ?? 0, 0) }}
+                    {{ number_format($item->nilai_keterampilan ?? $item->nilai_praktik ?? 0, 0) }}
                 </td>
                 <td class="text-center text-bold">
-                    {{ $item->predikat_keterampilan ?? $item->predikat ?? '-' }}
+                    {{ $item->predikat_keterampilan ?? '-' }}
                 </td>
                 <td style="font-size: 8pt;">
-                    {{ $item->deskripsi_keterampilan ?? $item->deskripsi ?? '-' }}
+                    {{ $item->deskripsi_keterampilan ?? '-' }}
                 </td>
             </tr>
             @empty
@@ -216,10 +226,10 @@
     </table>
 
     <!-- C & D: Ekstrakurikuler & Presensi -->
-    <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px;">
+    <table style="width: 100%; border-collapse: collapse; margin-bottom: 12px; table-layout: fixed;">
         <tr>
             <!-- C. Ekstrakurikuler -->
-            <td style="width: 58%; vertical-align: top; padding-right: 10px;">
+            <td style="width: 58%; vertical-align: top; padding-right: 10px; border: none;">
                 <div class="section-title">C. Ekstrakurikuler</div>
                 <table class="sub-table">
                     <thead>
@@ -250,12 +260,12 @@
             </td>
 
             <!-- D. Ketidakhadiran (Presensi) -->
-            <td style="width: 40%; vertical-align: top;">
+            <td style="width: 42%; vertical-align: top; border: none;">
                 <div class="section-title">D. Ketidakhadiran</div>
                 <table class="sub-table">
                     <thead>
                         <tr>
-                            <th>Alasan Ketidakhadiran</th>
+                            <th width="65%">Alasan Ketidakhadiran</th>
                             <th width="35%">Jumlah</th>
                         </tr>
                     </thead>
@@ -278,40 +288,40 @@
         </tr>
     </table>
 
-    <!-- Area Tanda Tangan -->
-    <table class="signature-table">
-        <!-- Baris Tanggal Cetak (Khusus Kolom Kanan) -->
-        <tr>
-            <td></td>
-            <td></td>
-            <td style="padding-bottom: 5px;">
-                Bandung, {{ $tanggalCetak ?? now()->locale('id')->translatedFormat('d F Y') }}
-            </td>
-        </tr>
-        <!-- Baris Jabatan & Tanda Tangan (Sejajar) -->
-        <tr>
-            <td>
-                <p>Orang Tua / Wali Siswa,</p>
-                <br><br><br>
-                <p class="text-bold">( .................................... )</p>
-            </td>
-            <td>
-                @if(isset($qrCodeImage) && $qrCodeImage)
-                <p>Verifikasi Digital Signature:</p>
-                <div class="qr-box">
-                    <img src="data:image/png;base64,{{ $qrCodeImage }}" alt="QR Signature" width="75">
-                </div>
-                <p style="font-size: 7pt; color: #555;">Scan keaslian dokumen</p>
-                @endif
-            </td>
-            <td>
-                <p>Wali Kelas,</p>
-                <br><br><br>
-                <p class="text-bold"><u>{{ $rombel->waliKelas?->nama_lengkap ?? $siswa->rombel?->waliKelas?->nama_lengkap ?? '....................................' }}</u></p>
-                <p style="font-size: 8pt;">NIP. {{ $rombel->waliKelas?->nip ?? $siswa->rombel?->waliKelas?->nip ?? '-' }}</p>
-            </td>
-        </tr>
-    </table>
+    <!-- Area Tanda Tangan Wrapper -->
+    <div class="signature-container">
+        <table class="signature-table">
+            <tr>
+                <td></td>
+                <td></td>
+                <td style="padding-bottom: 5px;">
+                    Jakarta, {{ $tanggalCetak ?? now()->locale('id')->translatedFormat('d F Y') }}
+                </td>
+            </tr>
+            <tr>
+                <td>
+                    <p>Orang Tua / Wali Siswa,</p>
+                    <br><br><br>
+                    <p class="text-bold">( .................................... )</p>
+                </td>
+                <td>
+                    @if(isset($qrCodeImage) && $qrCodeImage)
+                    <p>Verifikasi Digital Signature:</p>
+                    <div class="qr-box">
+                        <img src="data:image/png;base64,{{ $qrCodeImage }}" alt="QR Signature" width="75">
+                    </div>
+                    <p style="font-size: 7pt; color: #555;">Scan keaslian dokumen</p>
+                    @endif
+                </td>
+                <td>
+                    <p>Wali Kelas,</p>
+                    <br><br><br>
+                    <p class="text-bold"><u>{{ $rombel->waliKelas?->nama_lengkap ?? $siswa->rombel?->waliKelas?->nama_lengkap ?? '....................................' }}</u></p>
+                    <p style="font-size: 8pt;">NIP. {{ $rombel->waliKelas?->nip ?? $siswa->rombel?->waliKelas?->nip ?? '-' }}</p>
+                </td>
+            </tr>
+        </table>
+    </div>
 
     <!-- Page break antar siswa -->
     @if(!$loop->last)

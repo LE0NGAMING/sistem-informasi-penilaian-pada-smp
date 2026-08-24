@@ -25,6 +25,7 @@ use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\SiswaController;
 
 // Guru Controllers
+use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\PenilaianController as GuruPenilaianController;
 use App\Http\Controllers\Guru\RekapPenilaianController as GuruRekapPenilaianController;
 
@@ -126,7 +127,7 @@ Route::middleware('auth')->group(function () {
         ->prefix('guru')
         ->name('guru.')
         ->group(function () {
-            Route::get('/dashboard', fn() => view('guru.dashboard'))->name('dashboard');
+            Route::get('/dashboard', [GuruDashboardController::class, 'index'])->name('dashboard');
 
             // Penilaian Guru Mapel (Terbatas Berdasarkan Tabel Pengampu)
             Route::controller(GuruPenilaianController::class)->prefix('nilai')->name('nilai.')->group(function () {
