@@ -50,4 +50,9 @@ class Pengampu extends Model
     {
         return $this->belongsTo(TahunAjaran::class);
     }
+
+    public function penilaians()
+    {
+        return $this->hasMany(Penilaian::class, 'id', 'pengampu_id');
+    }
 }
