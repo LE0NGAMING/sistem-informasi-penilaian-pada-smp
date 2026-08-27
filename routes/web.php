@@ -9,13 +9,13 @@ use App\Http\Controllers\ProfileController;
 // Super Admin Controllers
 use App\Http\Controllers\SuperAdmin\DashboardController as SuperAdminDashboardController;
 use App\Http\Controllers\SuperAdmin\AdminSekolahController;
+use App\Http\Controllers\SuperAdmin\LogController;
 use App\Http\Controllers\SuperAdmin\UserController;
 
 // Admin Sekolah Controllers
 use App\Http\Controllers\Admin\DashboardController as AdminDashboardController;
 use App\Http\Controllers\Admin\GuruController;
 use App\Http\Controllers\Admin\KelasController;
-use App\Http\Controllers\Admin\LogController;
 use App\Http\Controllers\Admin\MapelController;
 use App\Http\Controllers\Admin\PengampuController;
 use App\Http\Controllers\Admin\PenilaianController as AdminPenilaianController;
@@ -67,7 +67,7 @@ Route::middleware('auth')->group(function () {
             Route::post('admin-sekolah/{user}/reset-password', [AdminSekolahController::class, 'resetPassword'])->name('admin-sekolah.reset-password');
 
             // Fitur Infrastruktur & Sistem
-            Route::get('/audit-logs', [SuperAdminLogController::class, 'index'])->name('logs.index');
+            Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
             Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
             Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
             Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
@@ -115,9 +115,6 @@ Route::middleware('auth')->group(function () {
 
             // Pengampu Mengajar (Manajemen Plotting Guru -> Mapel -> Rombel)
             Route::resource('pengampu', PengampuController::class);
-
-            // Log Aktivitas Sistem
-            Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
         });
 
     // -------------------------------------------------------------------------
@@ -194,9 +191,18 @@ Route::middleware('auth')->group(function () {
     // -------------------------------------------------------------------------
     // 6. PROFILE ROUTES (SHARED)
     // -------------------------------------------------------------------------
-    Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
-        Route::get('/', 'edit')->name('edit');
-        Route::put('/', 'update')->name('update');
+    Route::middleware('auth')->controller(ProfileController::class)->group(function () {
+        Route::get('/profile', 'edit')->name('profile.edit');
+        Route::patch('/profile', 'update')->name('profile.update');
         Route::put('/password', 'updatePassword')->name('password.update');
     });
+
+    // Route::controller(ProfileController::class)->prefix('profile')->name('profile.')->group(function () {
+
+    //     Route::get('/profile', [ProfileController::class, 'edit'])->name('profile.edit');
+
+    //     Route::patch('/profile', [ProfileController::class, 'update'])->name('profile.update');
+
+    //     Route::put('/password', [ProfileController::class, 'updatePassword'])->name('password.update');
+
 });

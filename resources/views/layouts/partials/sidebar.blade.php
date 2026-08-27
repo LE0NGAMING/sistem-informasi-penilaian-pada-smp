@@ -126,7 +126,7 @@ default => route('login'),
         @endif
 
         {{-- Pengaturan & Sistem --}}
-        @if(in_array($userRole, [RoleEnum::ADMIN_SEKOLAH, RoleEnum::SUPER_ADMIN], true))
+        @if($userRole === RoleEnum::SUPER_ADMIN)
         <div>
             <div class="px-6 pb-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Pengaturan</div>
             <ul class="space-y-1">
@@ -143,7 +143,7 @@ default => route('login'),
             <div class="px-6 pb-2 text-[11px] font-bold text-slate-500 uppercase tracking-wider">Sistem</div>
             <ul class="space-y-1">
                 <li>
-                    <a href="{{ route('admin.logs.index') }}" class="flex items-center gap-3 px-4 py-2.5 mx-3 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('admin.logs.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
+                    <a href="{{ route('superadmin.logs.index') }}" class="flex items-center gap-3 px-4 py-2.5 mx-3 rounded-lg text-sm font-medium transition-colors {{ request()->routeIs('superadmin.logs.*') ? 'bg-blue-600 text-white' : 'text-slate-400 hover:bg-slate-800 hover:text-white' }}">
                         <i class="bi bi-clock-history text-lg"></i>
                         <span>Log Aktivitas</span>
                     </a>

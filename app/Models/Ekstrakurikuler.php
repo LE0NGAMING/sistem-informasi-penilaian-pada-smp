@@ -4,10 +4,12 @@ namespace App\Models;
 
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
+use App\Traits\BelongsToSekolah;
+
 
 class Ekstrakurikuler extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToSekolah;
 
     protected $table = 'ekstrakurikuler';
     protected $guarded = ['id'];

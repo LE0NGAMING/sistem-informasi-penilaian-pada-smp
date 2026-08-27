@@ -5,10 +5,12 @@ namespace App\Models;
 use Illuminate\Database\Eloquent\Factories\HasFactory;
 use Illuminate\Database\Eloquent\Model;
 use Illuminate\Database\Eloquent\Relations\HasMany;
+use App\Traits\BelongsToSekolah;
+
 
 class Kelas extends Model
 {
-    use HasFactory;
+    use HasFactory, BelongsToSekolah;
 
     // Menentukan nama tabel secara eksplisit agar Laravel tidak otomatis mencari 'kelases'
     protected $table = 'kelas';
@@ -35,6 +37,6 @@ class Kelas extends Model
 
     public function presensis()
     {
-        return $this->hasMany(Presensi::class, 'kelas_id');
+        return $this->hasMany(PresensiHarian::class, 'kelas_id');
     }
 }

@@ -10,7 +10,7 @@ use App\Models\Siswa;
 use App\Models\Nilai;
 use App\Models\Penilaian;
 
-class PenilaianController extends Controller
+class PresensiGuruController extends Controller
 {
     public function index(Request $request)
     {

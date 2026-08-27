@@ -1,6 +1,6 @@
 <?php
 
-namespace App\Http\Controllers\Admin;
+namespace App\Http\Controllers\SuperAdmin;
 
 use App\Http\Controllers\Controller;
 use App\Models\User;
@@ -28,6 +28,6 @@ class LogController extends Controller
                 ->pluck('user_id')
         )->get();
 
-        return view('admin.logs.index', compact('logs', 'onlineUsers'));
+        return view('superadmin.logs.index', compact('logs', 'onlineUsers'));
     }
 }

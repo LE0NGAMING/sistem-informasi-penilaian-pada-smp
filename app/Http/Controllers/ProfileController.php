@@ -3,71 +3,47 @@
 namespace App\Http\Controllers;
 
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Auth;
 use Illuminate\Support\Facades\Hash;
 use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Auth;
 
 class ProfileController extends Controller
 {
-    /**
-     * Menampilkan halaman edit profil
-     */
-    public function edit()
+    public function edit(Request $request)
     {
         return view('profile.edit', [
-            'user' => Auth::user()
+            'user' => $request->user()
         ]);
     }
 
-    /**
-     * Memperbarui Nama & Email
-     */
     public function update(Request $request)
     {
-        $user = Auth::user();
+        $user = $request->user();
 
-        $request->validate([
+        $validated = $request->validate([
             'name'  => ['required', 'string', 'max:255'],
-            'email' => ['required', 'string', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'email' => ['required', 'email', 'max:255', 'unique:users,email,' . $user->id],
+            'phone' => ['nullable', 'string', 'max:20'],
         ]);
 
-        $user->update([
-            'name'  => $request->name,
-            'email' => $request->email,
-        ]);
+        $user->update($validated);
 
-        return back()->with('success_profile', 'Profil berhasil diperbarui!');
+        return back()->with('status', 'profile-updated');
     }
 
-    /**
-     * Memperbarui Password
-     */
     public function updatePassword(Request $request)
     {
-        $request->validate([
+        $validated = $request->validate([
             'current_password' => ['required', 'current_password'],
-            'password'         => ['required', 'confirmed', Password::defaults()],
-        ], [
-            'current_password.current_password' => 'Password saat ini tidak sesuai.',
-            'password.confirmed' => 'Konfirmasi password baru tidak cocok.',
+            'password'         => ['required', Password::defaults(), 'confirmed'],
         ]);
 
         $request->user()->update([
-            'password' => Hash::make($request->password),
+            'password' => Hash::make($validated['password']),
         ]);
 
-        return back()->with('success_password', 'Password berhasil diperbarui!');
-    }
+        Auth::logoutOtherDevices($validated['password']);
 
-    /**
-     * Logout Pengguna
-     */
-    public function logout(Request $request)
-    {
-        Auth::logout();
-        $request->session()->invalidate();
-        $request->session()->regenerateToken();
-
-        return redirect('/login');
+        return back()->with('status', 'password-updated');
     }
 }
