@@ -80,18 +80,41 @@
             </div>
         </div>
 
-        <!-- Card 4: Status Sistem -->
-        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition">
-            <div class="flex items-center justify-between">
+        <!-- Card 4: Status Server & Storage -->
+        <div class="bg-white rounded-2xl border border-slate-200/80 p-5 shadow-xs hover:shadow-md transition flex flex-col justify-between">
+            <!-- Header Card & Icon -->
+            <div class="flex items-start justify-between">
                 <div>
                     <p class="text-xs font-semibold uppercase tracking-wider text-slate-500">Status Server</p>
-                    <h3 class="text-2xl font-bold text-emerald-600 mt-1">Normal</h3>
-                    <p class="text-xs text-slate-400 mt-1">Database & Storage OK</p>
+                    <div class="flex items-center gap-2 mt-1">
+                        <h3 class="text-2xl font-bold text-emerald-600">{{ $serverStatus }}</h3>
+                        <!-- <span class="inline-flex items-center px-2 py-0.5 rounded text-[10px] font-medium bg-emerald-50 text-emerald-700 border border-emerald-200/60">
+                            DB OK
+                        </span> -->
+                    </div>
                 </div>
-                <div class="w-12 h-12 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
-                    <svg class="w-6 h-6" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
                         <path stroke-linecap="round" stroke-linejoin="round" d="M5.25 14.25h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 003 3h7.5a3 3 0 003-3m-13.5 0v-4.5a3 3 0 013-3h7.5a3 3 0 013 3v4.5m-13.5 0h13.5m-13.5 0a3 3 0 01-3-3m3 3a3 3 0 003 3h7.5a3 3 0 003-3m0 0a3 3 0 003-3v-4.5a3 3 0 00-3-3m-13.5 0h13.5" />
                     </svg>
+                </div>
+            </div>
+
+            <!-- Bagian Kapasitas Storage & Progress Bar -->
+            <div class="mt-4 pt-3 border-t border-slate-100">
+                <div class="flex items-center justify-between text-xs mb-1.5">
+                    <span class="text-slate-500 font-medium">Penyimpanan</span>
+                    <span class="font-bold text-slate-700">{{ $usedGB }} GB / {{ $totalGB }} GB</span>
+                </div>
+
+                <!-- Progress Bar -->
+                <div class="w-full bg-slate-100 rounded-full h-2 overflow-hidden">
+                    <div class="bg-indigo-600 h-2 rounded-full transition-all duration-500" style="width: {{ $storagePercent }}%"></div>
+                </div>
+
+                <div class="flex justify-between items-center text-[11px] text-slate-400 mt-1.5">
+                    <span>Terpakai</span>
+                    <span class="font-semibold text-indigo-600">{{ $storagePercent }}%</span>
                 </div>
             </div>
         </div>
@@ -129,13 +152,16 @@
                 <span class="text-xs font-bold text-slate-700 group-hover:text-amber-600">Pengaturan Tahun Ajaran</span>
             </a>
 
-            <a href="#" class="flex items-center gap-3 p-3.5 rounded-xl border border-slate-200 hover:border-emerald-500 hover:bg-emerald-50/50 transition group">
-                <div class="w-9 h-9 rounded-lg bg-emerald-100 text-emerald-600 flex items-center justify-center group-hover:scale-105 transition">
-                    <svg class="w-5 h-5" fill="none" viewBox="0 0 24 24" stroke="currentColor">
-                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M4 16v1a3 3 0 003 3h10a3 3 0 003-3v-1m-4-4l-4 4m0 0l-4-4m4 4V4" />
+            <a href="{{ route('superadmin.backup') }}" class="flex items-center gap-3 p-4 bg-white rounded-2xl border border-slate-200/80 hover:border-emerald-500 hover:shadow-md transition group">
+                <div class="w-10 h-10 rounded-xl bg-emerald-50 text-emerald-600 flex items-center justify-center shrink-0 group-hover:bg-emerald-600 group-hover:text-white transition">
+                    <svg class="w-5 h-5" xmlns="http://www.w3.org/2000/svg" fill="none" viewBox="0 0 24 24" stroke-width="1.5" stroke="currentColor">
+                        <path stroke-linecap="round" stroke-linejoin="round" d="M3 16.5v2.25A2.25 2.25 0 0 0 5.25 21h13.5A2.25 2.25 0 0 0 21 18.75V16.5M16.5 12 12 16.5m0 0L7.5 12m4.5 4.5V3" />
                     </svg>
                 </div>
-                <span class="text-xs font-bold text-slate-700 group-hover:text-emerald-600">Backup System</span>
+                <div>
+                    <h4 class="font-semibold text-slate-800 group-hover:text-emerald-600 transition">Backup System</h4>
+                    <p class="text-xs text-slate-400">Unduh cadangan database (.sql)</p>
+                </div>
             </a>
         </div>
     </div>

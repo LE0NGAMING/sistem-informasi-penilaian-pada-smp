@@ -23,7 +23,7 @@ use App\Http\Controllers\Admin\PresensiController as AdminPresensiController;
 use App\Http\Controllers\Admin\RekapPenilaianController as AdminRekapPenilaianController;
 use App\Http\Controllers\Admin\RombelController;
 use App\Http\Controllers\Admin\SiswaController;
-
+use App\Http\Controllers\DashboardController;
 // Guru Controllers
 use App\Http\Controllers\Guru\DashboardController as GuruDashboardController;
 use App\Http\Controllers\Guru\PenilaianController as GuruPenilaianController;
@@ -68,9 +68,9 @@ Route::middleware('auth')->group(function () {
 
             // Fitur Infrastruktur & Sistem
             Route::get('/logs', [LogController::class, 'index'])->name('logs.index');
-            Route::get('/backup', [BackupController::class, 'index'])->name('backup.index');
-            Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
-            Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
+            Route::get('/backup', [SuperAdminDashboardController::class, 'backupDatabase'])->name('backup');
+            // Route::post('/backup/run', [BackupController::class, 'run'])->name('backup.run');
+            // Route::get('/settings', [SystemSettingController::class, 'index'])->name('settings.index');
         });
 
     // -------------------------------------------------------------------------

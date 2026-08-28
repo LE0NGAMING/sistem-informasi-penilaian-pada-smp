@@ -16,17 +16,12 @@ class LogController extends Controller
      */
     public function index(): View
     {
-        // Mengambil log aktivitas terbaru dengan relasi 'causer' (menggunakan pagination)
-        $logs = Activity::with('causer')->latest()->paginate(20);
+        // Ambil log biasa
+        $logs = Activity::latest()->paginate(20); // hapus with('causer') dulu buat ngetes
 
-        // Mengambil daftar pengguna yang sedang aktif (online dalam 5 menit terakhir)
-        $onlineUsers = User::whereIn(
-            'id',
-            DB::table('sessions')
-                ->where('last_activity', '>=', now()->subMinutes(5)->getTimestamp())
-                ->whereNotNull('user_id')
-                ->pluck('user_id')
-        )->get();
+        // Fitur "online users" dimatikan sementara karena pake session file
+        // Kalau pake file, data session ada di storage/framework/sessions bukan di DB
+        $onlineUsers = collect();
 
         return view('superadmin.logs.index', compact('logs', 'onlineUsers'));
     }
