@@ -19,7 +19,8 @@ trait BelongsToSekolah
                 // Jangan filter jika user adalah Super Admin
                 if ($userRole !== 'super_admin' && !empty($user->sekolah_id)) {
                     $table = $builder->getModel()->getTable();
-                    $builder->where("{$table}.sekolah_id", $user->sekolah_id);
+                    $builder->where("{$table}.sekolah_id", $user->sekolah_id)
+                        ->orWhereNull("{$table}.sekolah_id");
                 }
             }
         });

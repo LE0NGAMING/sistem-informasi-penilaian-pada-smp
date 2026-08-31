@@ -18,7 +18,13 @@ class EkstrakurikulerSeeder extends Seeder
         ];
 
         foreach ($data as $item) {
-            Ekstrakurikuler::create($item);
+            Ekstrakurikuler::updateOrCreate(
+                ['nama_ekskul' => $item['nama_ekskul']], // Kunci pencarian agar tidak duplikat
+                [
+                    'pembina' => $item['pembina'],
+                    // 'sekolah_id' => 1, // Buka komentar ini jika ekskul diikat ke sekolah tertentu
+                ]
+            );
         }
     }
 }

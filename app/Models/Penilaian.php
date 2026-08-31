@@ -20,7 +20,7 @@ class Penilaian extends Model
         'mapel_id',
         'rombel_id',
         'tahun_ajaran_id',
-        'semester',
+        'semester_id',
 
         // KI-3 (Pengetahuan)
         'nilai_harian',

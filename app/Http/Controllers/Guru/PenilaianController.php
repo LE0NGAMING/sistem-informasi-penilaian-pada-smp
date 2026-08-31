@@ -56,7 +56,7 @@ class PenilaianController extends Controller
                 ->where('rombel_id', $rombelId)
                 ->with(['penilaian' => function ($query) use ($mapelId, $semester, $tahunAjaranId) {
                     $query->where('mapel_id', $mapelId)
-                        ->where('semester', $semester)
+                        ->where('semester_id', $semester)
                         ->where('tahun_ajaran_id', $tahunAjaranId);
                 }])
                 ->orderBy('nama_lengkap')
@@ -111,6 +111,7 @@ class PenilaianController extends Controller
         $isAuthorized = $guru->pengampus()
             ->where('rombel_id', $validated['rombel_id'])
             ->where('mapel_id', $validated['mapel_id'])
+            ->where('tahun_ajaran_id', $validated['tahun_ajaran_id'])
             ->exists();
 
         if (!$isAuthorized) {
@@ -188,7 +189,7 @@ class PenilaianController extends Controller
                         'siswa_id'        => $siswaId,
                         'mapel_id'        => $validated['mapel_id'],
                         'rombel_id'       => $validated['rombel_id'],
-                        'semester'        => $validated['semester_id'],
+                        'semester_id'     => $validated['semester_id'],
                         'tahun_ajaran_id' => $validated['tahun_ajaran_id'],
                     ],
                     [

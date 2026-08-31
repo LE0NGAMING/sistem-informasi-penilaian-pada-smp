@@ -16,19 +16,6 @@
         @endif
     </div>
 
-    {{-- Alert Notifikasi --}}
-    @session('success')
-    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm flex items-center justify-between">
-        <div class="flex gap-3 items-center">
-            <i class="bi bi-check-circle-fill text-emerald-500 text-lg"></i>
-            <p class="text-sm font-medium text-emerald-800">{{ $value }}</p>
-        </div>
-        <button type="button" class="text-emerald-600 hover:text-emerald-800 transition" onclick="this.parentElement.remove()">
-            <i class="bi bi-x-lg"></i>
-        </button>
-    </div>
-    @endsession
-
     {{-- Filter & Pencarian --}}
     <div class="bg-white p-4 rounded-xl border border-slate-200/80 shadow-sm">
         <form action="{{ route('admin.rombel.index') }}" method="GET" class="flex flex-col sm:flex-row gap-3">

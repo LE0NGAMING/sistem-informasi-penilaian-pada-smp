@@ -182,7 +182,7 @@ class RaporController extends Controller
             'rombel.waliKelas',
             'penilaian' => function ($query) use ($semesterFilter) {
                 if ($semesterFilter) {
-                    $query->where('semester', $semesterFilter);
+                    $query->where('semester_id', $semesterFilter);
                 }
                 $query->with('mapel');
             },
@@ -203,7 +203,7 @@ class RaporController extends Controller
         $pdf = Pdf::loadView('walikelas.rapor.pdf', [
             'siswaList'    => $siswaList,
             'rombel'       => $rombel,
-            'semester'     => $semester,
+            'semester_id'     => $semester,
             'tanggalCetak' => now()->locale('id')->translatedFormat('d F Y'),
         ])->setPaper('a4', 'portrait');
 

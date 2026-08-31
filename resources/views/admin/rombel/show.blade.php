@@ -4,19 +4,6 @@
 
 @section('content')
 <div class="space-y-6">
-    {{-- Alert Notifikasi --}}
-    @session('success')
-    <div class="p-4 bg-emerald-50 border border-emerald-200 rounded-xl shadow-sm flex items-center justify-between">
-        <div class="flex gap-3 items-center">
-            <i class="bi bi-check-circle-fill text-emerald-500 text-lg"></i>
-            <p class="text-sm font-medium text-emerald-800">{{ $value }}</p>
-        </div>
-        <button type="button" class="text-emerald-600 hover:text-emerald-800 transition" onclick="this.parentElement.remove()">
-            <i class="bi bi-x-lg"></i>
-        </button>
-    </div>
-    @endsession
-
     {{-- Informasi Rombel Card --}}
     <div class="bg-white rounded-xl border border-slate-200/80 shadow-sm p-6">
         <h3 class="text-base font-bold text-slate-800 mb-4 flex items-center gap-2">
